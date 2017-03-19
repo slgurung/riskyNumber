@@ -24,14 +24,14 @@ from riskyNumber.intradayData import get_intraday
 from riskyNumber.fillings import get_fillings
 from riskyNumber.trending import get_trending
 from riskyNumber.models import Exchange, Stock, UserProfile, Trending
-from riskyNumber.forms import ExchangeForm, StockForm, UserForm, UserProfileForm
+from riskyNumber.forms import UserForm, UserProfileForm
 from django.core.urlresolvers import reverse
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login
 from django.contrib.auth.models import User
 from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from registration.backends.simple.views import RegistrationView
-from django.utils import timezone
+
 
 
 tikCikDict = {}
@@ -43,13 +43,13 @@ if not tikCikDict:
 fillingDict={}
 
 ####### do something for begining setup
-'''
+
 Trending.objects.all().delete()
 trendList = get_trending()
 for t in trendList:
     trendStk = Trending(ticker = t)
     trendStk.save()
-'''
+
 stkIndex = {'^GSPC': 'S&P 500', '^DJI': 'Dow Jones Industrial' , '^IXIC': 'Nasdaq Composite'}
         
 def about(request):
