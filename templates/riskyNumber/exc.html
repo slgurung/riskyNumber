@@ -1,0 +1,7 @@
+<ul style="list-style-type:None">
+    {% for e in exces %}
+        <li>
+            <a href="{% url 'show_exchange' %}">{{e.name}}</a>
+        </li>
+    {% endfor %}
+<ul>

@@ -1,0 +1,92 @@
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script>   
+function lineChart(x, y, v, mn, mx) {               
+            
+            var d3 = Plotly.d3;
+            
+            document.getElementById("stock").innerHTML = window.symbol;
+             
+            // need to put #                                         
+            var gd3 = d3.select("#line") 
+                        .style({
+                                width: (window.chartWidth - 2) +'px' ,
+                                height: "300px",
+                            });
+            var gd = gd3.node(); //make global variable
+            
+            var data1 = {
+                    x: x,
+                    y: y,
+                    //yaxis: 'y2',
+                    mode: 'lines',
+                    type: 'scatter',
+                    fill: 'tozeroy',
+                    line: {color:'rgb(0,170,230)'},
+                    name: '',            
+            };
+            var data2 = {
+                    x: x,
+                    y: v,
+                    yaxis: 'y2',
+                    //xaxis: 'x2',
+                    type: "bar",
+                    marker: {
+                        color: 'rgb(0, 115, 150)'
+                    },     
+            };
+                    
+            var trace = [data1, data2];
+            
+            var layout = {
+                    
+                    autosize: true, //check
+                    margin:{l:0, t:5, r:45, b:30, pad:0},  
+                    dragmode: "pan",
+                    showlegend: false,
+                    xaxis: {
+                            ticks: "outside",
+                            type: "category",
+                            fixedrange: false, 
+                            showgrid: false,
+                            nticks: 5,
+                            linecolor: "#fff",
+                            side: "bottom",
+                            
+                            },                    
+                    yaxis: {
+                            fixedrange: true,
+                            range: [mn*0.995, mx],
+                            side: "right",
+                            separatethousands: true,
+                            exponentformat: "none",
+                            //tickmode: "auto",
+                            nticks: 5,
+                            overlaying: "y2",
+                            },
+                    yaxis2: {
+                            range: [mn * .99 , mx ],
+                            fixedrange: true,
+                            //overlaying: "y",
+                            showgrid: false,
+                           },
+                    
+                    };
+        
+            Plotly.newPlot(gd, trace, layout, {scrollZoom: true, 
+                                            displayModeBar: false });
+                                            
+        } // end of lineChart()
+
+
+ var d = {{ date|safe }}; //.map(function(d) { return (new Date(d)).; }); 
+ var v = {{ vol }};
+ var mn = {{ min }};
+ var mx = {{ max }};
+ var o = {{ open }}; 
+ var h = {{ high }};
+ var l = {{ low }};
+ var c = {{ close }};
+ //var s = {{ start }};
+ //var e = {{ end }};                         
+ lineChart(d, c, v, mn, mx);   
+</script>       

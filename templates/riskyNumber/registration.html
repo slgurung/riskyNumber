@@ -1,0 +1,29 @@
+<div>
+<form name="login" method="post" action="{% url 'register' %}" enctype="multipart/form-data"> 
+    {% csrf_token %}
+    <table style="width:100%;color:rgb(0, 77, 150);border-collapse:collapse;">
+        {% for u in user_form %}
+        <tr>
+            <td style="width:80px; vertical-align: top;padding-top:2px;">{{u.label}}:</td>
+            <td>{{u}}<p>{{u.help_text}}</p></td>
+                
+        </tr>
+        {% endfor %}
+
+        {% for p in profile_form %}
+        <tr>
+            <td style="width:80px; vertical-align: top;padding-top:2px;">{{p.label}}:</td>
+            <td>{{p}}<p>{{p.help_text}}</p></td>
+        </tr>
+        {% endfor %}
+        
+        <tr>
+            <td></td>
+            <td>
+                <button type="submit" class="btn btn-primary" 
+                    style="background-color:rgb(0, 163, 204);">Submit</button> 
+            </td>
+        </tr>   
+    </table>
+</form>
+</div>

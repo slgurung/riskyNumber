@@ -1,0 +1,139 @@
+{% extends 'riskyNumber/base.html' %}
+{% load staticfiles %}
+
+{% block title_block %}
+    Index
+{% endblock %}
+
+{% block chart_block %}
+    <div style="padding:3px 2px 5px 2px;">
+        <ul class="nav nav-tabs" style="background-color:rgb(242, 242, 242);">
+            <li class="active" style="width:30%;text-align:center;"><a id="scatter"  href="#line" ></a></li>
+            <li style="width:30%;text-align:center;"><a id="candlestick" href="#candle" >CandleStick</a></li>
+            <li style="width:30%;text-align:center;"><a id="fillingList" href="#filling" >Fillings</a></li>
+        </ul>
+        <div class="tab-content" style="height:325px; background-color:rgb(242, 242, 242);">
+            <div id="line" class="tab-pane fade in active"></div>
+            <div id="candle" class="tab-pane fade"></div>
+            <div id="filling" class="tab-pane fade" style="height:300px;width:100%;background-color:white;">Downloading... Come back please.</div>
+            <div class="histChart" style="padding:5px 0px 0px 20px;">
+                <ul class="list-inline">
+                    <li><a id="d1" href="#">1D</a></li>
+                    <li><a id="d5" href="#">5D</a></li>
+                    <li><a id="m1" href="#">1M</a></li>
+                    <li><a id="m6" href="#">6M</a></li>
+                    <li><a id="y1" href="#">1Y</a></li>
+                    <li><a id="y2" href="#">2Y</a></li>
+                    <li><a id="y5" href="#">5Y</a></li>
+                 
+                </ul>
+            </div>
+        </div>
+    </div>      
+    
+    <script>               
+        var chartPeriod = "d1";  
+        var chartType = "scatter";              
+                
+        var symbol = "{{ticker}}"; 
+        var name = "{{name}}";              
+        var start = "{{start|safe}}";
+        var end = "{{end|safe}}";            
+       
+        var dateVal = {{date}}.map(function(d) {return new Date(d * 1000);});
+        var min = {{ min }};
+        var max = {{ max }};
+        var openVal = {{ open }}; 
+        var highVal = {{ high }};
+        var lowVal = {{ low }};
+        var closeVal = {{ close }}; 
+                       
+        var vol = '';               
+        var volmn = '';
+        var volmx = '';
+    </script>
+    
+{% endblock %}
+
+{% block summary_block %}
+<div style="background-color:white;padding:0px 15px 0px 15px;">
+    <table class="table table-hover" style="width:100%;">
+        <thead>
+            <tr>
+                <th style="color:rgb(0,90,180);">Risky Numbers<sup>1</sup>:</th>
+                <th></th>
+                <th></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody id="sTable">
+            <script>
+                var summary = {{summary|safe}};
+                var keys = {{fundamentals|safe}};
+                var i;
+                var summaryTable = "";
+                for (i=0; i < keys.length; i++){
+                    if ( i%2 == 0){
+                        summaryTable += "<tr><td>" + keys[i] + "</td><td style='text-align:right;font-weight:bold;'>" 
+                                                         + summary[keys[i]] + "</td>";                  
+                    } else{
+                        summaryTable += "<td>" + keys[i] + "</td><td style='text-align:right;font-weight:bold;'>" 
+                                                     + summary[keys[i]] + "</td></tr>";     
+                    }
+                }
+                document.getElementById("sTable").innerHTML = summaryTable;
+            </script>
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block stock_news %}
+    <div class="jumbotron" style="padding:10px 10px 10px 20px; margin:auto;">
+                    <strong>The Street's views on Stock:</strong>
+    </div>
+    <script>
+        var news = {{ stockNews|safe }};
+        var ul = document.createElement("UL");
+        ul.setAttribute("id", "stockNewsTitle");
+                       
+        document.getElementById("stock_news").appendChild(ul);                               
+        for(i =0; i < news.length; i++){
+            var li = document.createElement("LI");
+            var a = document.createElement("A"); 
+            li.appendChild(a);                              
+            var newsTitle = document.createTextNode(news[i]["title"]);
+            a.setAttribute("href", news[i]["link"]);
+            a.setAttribute("target", "_blank");
+            a.appendChild(newsTitle);
+            document.getElementById("stockNewsTitle").appendChild(li);
+        }
+       
+    </script>       
+{% endblock %}
+                
+                
+{% block business_news %}
+    <div class="jumbotron" style="padding:10px 10px 10px 20px; margin:auto;">
+                    <strong>What is making headline today?</strong>
+    </div>
+    <script>
+        var news = {{ businessNews|safe }};
+        var ul = document.createElement("UL");
+        ul.setAttribute("id", "bizNewsTitle");
+        ul.setAttribute("class", "bizNews");               
+        document.getElementById("business_news").appendChild(ul);                               
+        for(i =0; i < news.length; i++){
+            var li = document.createElement("LI");
+            var a = document.createElement("A"); 
+            li.appendChild(a);                              
+            var newsTitle = document.createTextNode(news[i]["title"]);
+            a.setAttribute("href", news[i]["link"]);
+            a.setAttribute("target", "_blank");
+            a.appendChild(newsTitle);
+            document.getElementById("bizNewsTitle").appendChild(li);
+        }
+       
+    </script>
+  
+{% endblock %}
