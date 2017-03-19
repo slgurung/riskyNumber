@@ -43,13 +43,13 @@ if not tikCikDict:
 fillingDict={}
 
 ####### do something for begining setup
-
+'''
 Trending.objects.all().delete()
 trendList = get_trending()
 for t in trendList:
     trendStk = Trending(ticker = t)
     trendStk.save()
-
+'''
 stkIndex = {'^GSPC': 'S&P 500', '^DJI': 'Dow Jones Industrial' , '^IXIC': 'Nasdaq Composite'}
         
 def about(request):
