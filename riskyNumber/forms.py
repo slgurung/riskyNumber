@@ -4,30 +4,10 @@ from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from django.utils.translation import ugettext_lazy as _
 
-class ExchangeForm(forms.ModelForm):
-    # A ModelForm maps a model class’s fields to HTML form <input> elements 
-    # via a Form; this is what the Django admin is based upo
-    name = forms.CharField(max_length = 50, help_text= 'Enter Exchange Name.')
-    
-    class Meta:
-        model = Exchange
-        fields = ('name',)
-        
+
 class StockForm(forms.ModelForm):
     ticker = forms.CharField(max_length = 10, help_text = 'Enter Page Title')
-    #url = forms.URLField(max_length = 200, help_text = 'Enter page URL')
-    #views = forms.IntegerField(widget = forms.HiddenInput(), initial = 0)
-    '''
-    def clean(self):
-        cleaned_data = self.cleaned_data
-        url = cleaned_data.get('url')
-        
-        if url and not url.startswith('http://'):
-            url = 'http://' + url
-            cleaned_data['url'] = url
-            
-            return cleaned_data
-    '''
+    
     class Meta:
         model = Stock
         exclude = ('ticker',)
