@@ -230,6 +230,7 @@ function lineChartD5(x, y, mn, mx) {
                         height: "300px",
                 });
     var gd = gd3.node();
+<<<<<<< HEAD
     x = x.map(function(d){
                             var dList = d.toString().split(" ");
                             return dList[0] +" " + dList[2] +", " + dList[4]; 
@@ -237,6 +238,9 @@ function lineChartD5(x, y, mn, mx) {
                     });
 
 
+=======
+    
+>>>>>>> 0c3af658d8db9741dd98d04d717d460cebccc4f7
     var data1 = {
                     x: x,
                     y: y,
@@ -254,14 +258,22 @@ function lineChartD5(x, y, mn, mx) {
                     dragmode: "pan",
                     showlegend: false,
                     xaxis: {
+<<<<<<< HEAD
                             range: [start, end],
+=======
+                            //range: [start, end],
+>>>>>>> 0c3af658d8db9741dd98d04d717d460cebccc4f7
                             ticks: "outside",
                             type: "category",
                             fixedrange: false, 
                             showgrid: false,
                             //autorange: false,
                             //tickformat: "%I:%M %p,%b %d'%y",
+<<<<<<< HEAD
                             tickformat: "%I:%M %p",
+=======
+                            //tickformat: "%I:%M %p",
+>>>>>>> 0c3af658d8db9741dd98d04d717d460cebccc4f7
                             nticks: 4,
                             //tickmode: "auto",
                             linecolor: "#fff",
@@ -273,7 +285,11 @@ function lineChartD5(x, y, mn, mx) {
                             side: "right",
                             separatethousands: true,
                             exponentformat: "none",
+<<<<<<< HEAD
                             
+=======
+                            nticks: 5,
+>>>>>>> 0c3af658d8db9741dd98d04d717d460cebccc4f7
                             },
                              
                 };
@@ -565,6 +581,7 @@ $(document).ready(function(){
                                 //console.log(dateVal); 
                                 if ((chartPeriod != 'd1') && (chartPeriod != 'd5')){  
                                     hLineChart(dateVal, closeVal, vol, min, max);  
+<<<<<<< HEAD
                                 }else{
                                     dateVal = dateVal.map(function(d) {return new Date(d * 1000);});
                                     start = data.start;
@@ -577,6 +594,15 @@ $(document).ready(function(){
                                         lineChart(dateVal, closeVal, min, max); 
                                     }
                                             
+=======
+                                }else if (chartPeriod == 'd5'){
+                                    lineChartD5(dateVal, closeVal, min, max); 
+                                }else {
+                                    //dateVal = dateVal.map(function(d) {return new Date(d * 1000);});
+                                    start = data.start;
+                                    end = data.end;
+                                    lineChart(dateVal, closeVal, min, max); 
+>>>>>>> 0c3af658d8db9741dd98d04d717d460cebccc4f7
                                 }
                             },
                     
