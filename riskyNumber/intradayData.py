@@ -5,7 +5,7 @@ from pandas_datareader import data as web
 import requests
 #import matplotlib.pyplot as plt
 
-def get_google_data(symbol, period, window, exch = 'NYSE'):
+def get_google_data(symbol, period, window, exch = 'NASDAQ'):
     url_root = ('http://www.google.com/finance/getprices?i='
                 + str(period) + '&p=' + str(window)
                 + 'd&f=d,o,h,l,c,v&df=cpct&x=' + exch.upper() 
@@ -39,6 +39,7 @@ def get_google_data(symbol, period, window, exch = 'NYSE'):
     for column in df.columns:    #shitty implementation because to_numeric is pd but does not accept df
         df[column]=pd.to_numeric(df[column])
     
+    df.columns=df.columns.str.lower()	
     return df
     
 def get_yahoo_intraday(ticker, day ): #day need to be 1 for this function, instead us get_intraday()

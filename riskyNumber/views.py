@@ -43,13 +43,14 @@ if not tikCikDict:
 fillingDict={}
 
 ####### do something for begining setup
-'''
+trendList = []
+
 Trending.objects.all().delete()
 trendList = get_trending()
 for t in trendList:
     trendStk = Trending(ticker = t)
     trendStk.save()
-'''
+
 stkIndex = {'^GSPC': 'S&P 500', '^DJI': 'Dow Jones Industrial' , '^IXIC': 'Nasdaq Composite'}
         
 def about(request):
@@ -95,20 +96,20 @@ def index(request):
     
     quote = get_intraday(ticker)    #[0:50]
     quote = quote.applymap(lambda x: pd.to_numeric(x))
-    
-    context_dict['date'] = list(quote.date)
-    startDate = dt.fromtimestamp(quote.date[0])
-    startDate = startDate.date().strftime("%Y-%m-%d")
-    
+
+    dateSeries = quote.date.map(lambda x: dt.fromtimestamp(x))
+    #context_dict['date'] = list(quote.date)
+    #startDate = dt.fromtimestamp(quote.date[0])
+    #startDate = startDate.date().strftime("%Y-%m-%d")
+    #startDate = dateSeries[0].date().strftime("%Y-%m-%d")
     #i = quote.index #range(len(quote)))
-    #i = list(i.strftime("%Y-%m-%d %H:%M:%S"))
-    #startDate = i[0].split(' ')[0]
+    context_dict['date'] = list(dateSeries.map(str)) # change Timestamp obj to string. but don't work strftime()
+    #startDate = context_dict['date'][0].split(' ')[0]
+    startDate = str(dateSeries[0].date())
     
     context_dict['start'] = startDate + ' 9:30:00'
     context_dict['end'] = startDate + ' 16:00:00'
-    
-    
-    
+       
     context_dict['close'] = list(quote['close'])
     context_dict['open'] = list(quote.open)
     context_dict['high'] = list(quote.high)
@@ -301,10 +302,15 @@ def summary(request, ticker):
     
     quote = get_intraday(ticker)
     quote = quote.applymap(lambda x: pd.to_numeric(x))
-
-    context_dict['date'] = list(quote.date)
-    startDate = dt.fromtimestamp(quote.date[0])
-    startDate = startDate.date().strftime("%Y-%m-%d")
+    
+    dateSeries = quote.date.map(lambda x: dt.fromtimestamp(x))
+    #context_dict['date'] = list(quote.date)
+    #startDate = dt.fromtimestamp(quote.date[0])
+    #startDate = startDate.date().strftime("%Y-%m-%d")
+    #startDate = context_dict['date'][0].date().strftime("%Y-%m-%d")
+    #context_dict['date'] = list(dateSeries.strftime("%Y-%m-%d %H:%M:%S"))
+    context_dict['date'] = list(dateSeries.map(str)) # change Timestamp obj to string. but don't work strftime()
+    startDate = context_dict['date'][0].split(' ')[0]
     
     context_dict['start'] = startDate + ' 9:30:00'
     context_dict['end'] = startDate + ' 16:00:00'

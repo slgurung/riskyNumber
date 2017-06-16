@@ -28,7 +28,7 @@ SECRET_KEY = 'wmk4)v317epkun7j2-1yn#=-%ylz2sr-1uw^6h5tf@*dip8g9j'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['.riskynumber.com','.riskynumbers.com','162.243.172.77']
 
 
 # Application definition
@@ -128,7 +128,7 @@ LOGIN_URL = '/accounts/login/'
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/New_York'
 
 USE_I18N = True
 
@@ -142,5 +142,6 @@ USE_TZ = True
 
 MEDIA_ROOT = MEDIA_DIR
 MEDIA_URL = '/media/'
-STATICFILES_DIRS = [STATIC_DIR, ]
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+STATICFILES_DIRS = ['/home/risknumber/riskyNumber/extstatic',]  

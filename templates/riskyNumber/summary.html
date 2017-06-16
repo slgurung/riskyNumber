@@ -36,11 +36,11 @@
         var chartType = "scatter";              
                 
         var symbol = "{{ticker}}"; 
-        var name = "{{name}}";              
+        var name = "{{name|safe}}";              
         var start = "{{start|safe}}";
         var end = "{{end|safe}}";            
        
-        var dateVal = {{date}}.map(function(d) {return new Date(d * 1000);});
+        var dateVal = {{date|safe}}.map(function(d) {return new Date(d);});
         var min = {{ min }};
         var max = {{ max }};
         var openVal = {{ open }}; 
