@@ -2,11 +2,7 @@ import urllib
 import datetime as dt
 import pandas as pd
 from pandas_datareader import data as web
-<<<<<<< HEAD
-import requests
-=======
 #import requests
->>>>>>> 0c3af658d8db9741dd98d04d717d460cebccc4f7
 #import matplotlib.pyplot as plt
 
 def get_google_data(symbol, period, window, exch = 'NASDAQ'):
@@ -26,12 +22,7 @@ def get_google_data(symbol, period, window, exch = 'NASDAQ'):
     header[4][0] = header[4][0][8:]  
                              #get rid of 'Columns:' for label row
     df=pd.DataFrame(data, columns=header[4])
-<<<<<<< HEAD
-  
-    
-=======
       
->>>>>>> 0c3af658d8db9741dd98d04d717d460cebccc4f7
     ind=pd.Series(len(df))
     for i in range(len(df)):
         if df['DATE'].ix[i][0] == 'a':
@@ -47,11 +38,7 @@ def get_google_data(symbol, period, window, exch = 'NASDAQ'):
     for column in df.columns:    #shitty implementation because to_numeric is pd but does not accept df
         df[column]=pd.to_numeric(df[column])
     
-<<<<<<< HEAD
-    df.columns=df.columns.str.lower()	
-=======
     df.columns = df.columns.str.lower()
->>>>>>> 0c3af658d8db9741dd98d04d717d460cebccc4f7
     return df
     
 def get_yahoo_intraday(ticker, day ): #day need to be 1 for this function, instead us get_intraday()
@@ -143,11 +130,7 @@ def get_intraday(ticker, day=1):
 
    
     
-<<<<<<< HEAD
-#df = get_google_data('FB', 1000, 2, 'NASDAQ' )
-=======
 df = get_google_data('FB', 60, 1, 'NASDAQ' )
->>>>>>> 0c3af658d8db9741dd98d04d717d460cebccc4f7
 def get_historical():
     end = dt.date.today()
     start = end - dt.timedelta(365/12)
