@@ -2,14 +2,14 @@ $(document).ready(function() {
     $('#suggestion').keyup(function(){
         var query;
         query = $(this).val();
-        $.get('/riskyNumber/suggest/', {suggestion: query}, function(data){
+        $.get('/suggest/', {suggestion: query}, function(data){
             $('#stocks').html(data);
             });
     });
     $("#tickerForm").on("submit", function(e){
         e.preventDefault();  
         $.ajax({
-            url: "/riskyNumber/quote/",
+            url: "/quote/",
             type: "get",
             data: {
                 ticker: $("#suggestion").val()        
@@ -17,7 +17,7 @@ $(document).ready(function() {
             dataType: 'json',
             success: function(data){
                 if(data.result == 'exist'){
-                 window.location.href="/riskyNumber/summary/" + data.ticker +"/";       
+                 window.location.href="/summary/" + data.ticker +"/";       
                 }else{
                     $("#suggestion").val("");
                     document.getElementById("suggestion").placeholder = "Ticker isn't in my list. Try another."; 
@@ -79,7 +79,7 @@ $(document).ready(function() {
     $("#id_username").change(function () {
         var username = $(this).val();
         $.ajax({
-            url: "/riskyNumber/validate_username/",
+            url: "/validate_username/",
             type: "POST",
             data: {
                 'username': username        
@@ -138,7 +138,7 @@ function clearLoginForm(){
 
 function auth_login(){
     $.ajax({
-        url: "/riskyNumber/authenticate_login/",
+        url: "/authenticate_login/",
         type: "POST",
         data: {uname: $("#id_login_username").val(),
                   pword: $("#id_login_password").val()},
@@ -502,7 +502,7 @@ $(document).ready(function(){
             chartType = "fillingList";    
             
             $.ajax({
-                    url: "/riskyNumber/fillings/",
+                    url: "/fillings/",
                     type: "POST",
                     data: {
                         'ticker': window.symbol,        
@@ -539,7 +539,7 @@ $(document).ready(function(){
             chartPeriod = id;
             //console.log(id + symbol);
             $.ajax({
-                    url: "/riskyNumber/hChart/",
+                    url: "/hChart/",
                     type: "POST",
                     data: {"chartPeriod": id, "ticker": symbol},
                     dataType: "json",
