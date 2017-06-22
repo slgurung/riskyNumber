@@ -6,6 +6,7 @@
 
 import requests
 from bs4 import BeautifulSoup as bs
+from riskyNumber.models import Stock
 
 def get_trending():
     nasdaq = 'http://www.nasdaq.com/markets/most-active.aspx'
@@ -74,13 +75,16 @@ def get_trending():
     
     for h in mostActive:
         symbol = h.string
-        mostActiveList.append(symbol)
+        if Stock.objects.filter(ticker__iexact=symbol).exists():
+            mostActiveList.append(symbol)
     for h in mostAdvanced:
         symbol = h.string
-        mostAdvancedList.append(symbol)
+        if Stock.objects.filter(ticker__iexact=symbol).exists():    
+            mostAdvancedList.append(symbol)
     for h in mostDeclined:
         symbol = h.string
-        mostDeclinedList.append(symbol)    
+        if Stock.objects.filter(ticker__iexact=symbol).exists():
+            mostDeclinedList.append(symbol)    
        
     set1 = set(mostAdvancedList + mostDeclinedList)
     set2 = set(mostActiveList)

@@ -2,7 +2,7 @@
 {% load staticfiles %}
 
 {% block title_block %}
-    Index
+    riskyNumber
 {% endblock %}
 
 {% block chart_block %}
@@ -34,12 +34,12 @@
     <script>               
         var chartPeriod = "d1";  
         var chartType = "scatter";              
-               
-        var symbol = "{{ticker}}";
-        var name = "{{name|safe}}";
+                
+        var symbol = "{{ticker}}"; 
+        var name = "{{name|safe}}";              
         var start = "{{start|safe}}";
-        var end = "{{end|safe}}";
-
+        var end = "{{end|safe}}";            
+       
         var dateVal = {{date|safe}}.map(function(d) {return new Date(d);});
         var min = {{ min }};
         var max = {{ max }};

@@ -2,7 +2,9 @@
 {% load staticfiles %}
 
 {% block title_block %}
-    Index
+    
+    Quote: {{ticker}}
+    
 {% endblock %}
 
 {% block chart_block %}
@@ -40,7 +42,7 @@
         var start = "{{start|safe}}";
         var end = "{{end|safe}}";            
        
-        var dateVal = {{date|safe}}.map(function(d) {return new Date(d);});
+        var dateVal = {{date|safe}}; //.map(function(d) {return new Date(d);});
         var min = {{ min }};
         var max = {{ max }};
         var openVal = {{ open }}; 
