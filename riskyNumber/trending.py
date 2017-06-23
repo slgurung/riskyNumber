@@ -13,10 +13,13 @@ def get_trending():
     nyse = 'http://www.nasdaq.com/markets/most-active.aspx?exchange=NYSE'
     amex = 'http://www.nasdaq.com/markets/most-active.aspx?exchange=AMEX'
          
-    mostActiveList = []
-    mostAdvancedList = []
-    mostDeclinedList = []    
+#    mostActiveList = []
+#    mostAdvancedList = []
+#    mostDeclinedList = []   
     
+    trendList = []
+      
+    # Nasdaq
     response = requests.get(nasdaq)
     soup = bs(response.content, "lxml")    
     
@@ -31,13 +34,19 @@ def get_trending():
     
     for h in mostActive:
         symbol = h.string
-        mostActiveList.append(symbol)
+        if Stock.objects.filter(ticker__iexact=symbol).exists():
+            trendList.append(symbol)
+        #mostActiveList.append(symbol)
     for h in mostAdvanced:
         symbol = h.string
-        mostAdvancedList.append(symbol)
+        if Stock.objects.filter(ticker__iexact=symbol).exists():
+            trendList.append(symbol)
+        #mostAdvancedList.append(symbol)
     for h in mostDeclined:
         symbol = h.string
-        mostDeclinedList.append(symbol)   
+        if Stock.objects.filter(ticker__iexact=symbol).exists():
+            trendList.append(symbol)
+        #mostDeclinedList.append(symbol)   
     
     ### NYSE
     response = requests.get(nyse)
@@ -53,13 +62,19 @@ def get_trending():
     
     for h in mostActive:
         symbol = h.string
-        mostActiveList.append(symbol)
+        if Stock.objects.filter(ticker__iexact=symbol).exists():
+            trendList.append(symbol)
+        #mostActiveList.append(symbol)
     for h in mostAdvanced:
         symbol = h.string
-        mostAdvancedList.append(symbol)
+        if Stock.objects.filter(ticker__iexact=symbol).exists():
+            trendList.append(symbol)
+        #mostAdvancedList.append(symbol)
     for h in mostDeclined:
         symbol = h.string
-        mostDeclinedList.append(symbol)    
+        if Stock.objects.filter(ticker__iexact=symbol).exists():
+            trendList.append(symbol)
+        #mostDeclinedList.append(symbol)    
     
     ### AMEX
     response = requests.get(amex)
@@ -73,23 +88,27 @@ def get_trending():
     mostAdvanced = mostAdvanced.find_all('h3')[1:2]
     mostDeclined = mostDeclined.find_all('h3')[1:2]
     
+            
     for h in mostActive:
         symbol = h.string
         if Stock.objects.filter(ticker__iexact=symbol).exists():
-            mostActiveList.append(symbol)
+            trendList.append(symbol)
+            #mostActiveList.append(symbol)
     for h in mostAdvanced:
         symbol = h.string
-        if Stock.objects.filter(ticker__iexact=symbol).exists():    
-            mostAdvancedList.append(symbol)
+        if Stock.objects.filter(ticker__iexact=symbol).exists(): 
+            trendList.append(symbol)
+            #mostAdvancedList.append(symbol)
     for h in mostDeclined:
         symbol = h.string
         if Stock.objects.filter(ticker__iexact=symbol).exists():
-            mostDeclinedList.append(symbol)    
+            trendList.append(symbol)
+            #mostDeclinedList.append(symbol)    
        
-    set1 = set(mostAdvancedList + mostDeclinedList)
-    set2 = set(mostActiveList)
-    trendList = set2.union(set1)    
+    #set1 = set(mostAdvancedList + mostDeclinedList)
+    #set2 = set(mostActiveList)
+    #trendList = set2.union(set1)    
     
     
     
-    return list(trendList) # mostActiveList, mostAdvancedList, mostDeclinedList
+    return trendList # mostActiveList, mostAdvancedList, mostDeclinedList
