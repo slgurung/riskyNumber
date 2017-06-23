@@ -43,8 +43,9 @@ if not tikCikDict:
 fillingDict={}
 
 ####### do something for begining setup
-trendList = []
+trendList = ['FB', 'GOOG', 'MSFT']
 
+'''
 # ******************At the beginning Need to disable this block before database is initialized
 Trending.objects.all().delete()
 trendList = get_trending()
@@ -52,7 +53,7 @@ for t in trendList:
     trendStk = Trending(ticker = t)
     trendStk.save()
 # ***************************************************
-
+'''
 stkIndex = {'.INX': 'S&P 500', '.DJI': 'Dow Jones Industrial' , '.IXIC': 'Nasdaq Composite'}
 indexEx = {'.INX': 'INDEXSP', '.DJI': 'INDEXDJX' , '.IXIC': 'INDEXNASDAQ'}
 
@@ -300,7 +301,10 @@ def summary(request, ticker):
         fThread = fillingThread('filling:' + ticker, ticker)
         fThread.start()
     
-    trending = Trending.objects.all()
+    #trending = Trending.objects.all()
+    #****************************************
+    trending = trendList
+    #*************************************** temporary
     trending = [trend.ticker for trend in trending]
     context_dict['trending'] = trending
           
