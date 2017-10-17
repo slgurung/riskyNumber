@@ -6,7 +6,7 @@
 <head>
     <title> 
         {% block title_block %}
-            Equity Trade!
+            
         {% endblock %} 
     </title> 
     <meta charset="utf-8"> 
@@ -41,6 +41,7 @@
         .modal-footer {
               background-color: #f9f9f9;
           }
+          
        
          
     </style>
@@ -61,9 +62,9 @@
             <ul class="nav navbar-nav"> 
                 <li><a class="nav-item nav-link" href="{% url 'home' %}" style="color:rgb(0, 60, 77);font-size: 16px;">
                                                        <span class="glyphicon glyphicon-home"></span></a></li>
-                <li><a class="nav-item nav-link" href="{% url 'summary' '.INX' %}" style="color:	white">S&P 500</a></li>
-                <li><a class="nav-item nav-link" href="{% url 'summary' '.DJI' %}" style="color:white;">DJI</a></li>  
-                <li><a class="nav-item nav-link" href="{% url 'summary' '.IXIC' %}" style="color:white;">Nasdaq</a></li>                     
+                <li><a class="nav-item nav-link" href="{% url 'summary' '^GSPC' %}" style="color:white">S&P 500</a></li>
+                <li><a class="nav-item nav-link" href="{% url 'summary' '^DJI' %}" style="color:white;">DJI</a></li>  
+                <li><a class="nav-item nav-link" href="{% url 'summary' '^IXIC' %}" style="color:white;">Nasdaq</a></li>                     
                 <!-- put search here later 
                 -->
             </ul>
@@ -137,7 +138,7 @@
        
     <!-- sign-in modal end -->
           
-    <!---- signup modal starts -->
+    <!-- signup modal starts -->
     
     <div class="container">
     <!-- Modal -->
@@ -231,19 +232,57 @@
     <!-- singup modal end -->
       
     <div class="container" style="max-width:1000px;"> 
-        <div class="row"> 
-            <div class="col-md-12">
-                <table style="border-collapse: collapse;min-width:720px;">
-                    <tr style="text-align:left;vertical-align:bottom;">
-                        <th style="font-size:18px;"><span class="label label-success" style="color:rgb(168,31,31);">
-                            Trending: </span></th>            
+        <div class="row" id="trendTable"> 
+            <div class="col-xs-12 col-md-12">
+                
+                <table style="border-collapse: collapse; width: 100%;">
+                    <tr id='trendRow' style="text-align:center;">
+                        <td style="font-size:18px; background-color: rgb(100,0,0); text-align: center; color: rgb(0,255,0);border-radius:10px 10px 10px 10px;">
+                            Trending:</td>  
+                        <!--              
                         {% for t in trending %}
                             {% if forloop.last %}
                                 <th ><a id= "{{t}}"  href="{% url 'summary' t %}">{{t}}</a></th>
                             {% else %}
-                                <th ><a id= "{{t}}"  href="{% url 'summary' t %}">{{t}}-</a></th>
+                                <th ><a id= "{{t}}"  href="{% url 'summary' t %}">{{t}}</a></th>
                             {% endif %}
                         {% endfor %}
+                        -->
+                        <script>
+
+                            var trendWidth = document.getElementById("trendTable").parentElement.clientWidth;
+                            var colNum = parseInt(trendWidth/50);
+                            var trendCell = document.getElementById("trendRow");
+                            console.log(colNum);
+                            
+                            var trending = {{ trending|safe }};
+                            var trendType = {{ trendType|safe }};
+                            var tikNum = trending.length;
+                            if (tikNum < colNum){
+                                colNum = tikNum;
+                            }
+                            for ( i = 0; i < colNum; i++){
+                                
+                                var x = trendCell.insertCell(-1);
+                                // x.innerHTML = "<a id= " + trending[i] +  ">" + trending[i] + "</a>";
+                                x.innerHTML = "<a id= " + trending[i] + " href = /summary/" + trending[i] + "/ " + " style= color:" + trendType[i] +"; >" + trending[i] + "</a>";
+
+                                //x.style.color = trendType[i];
+                                //x.setAttribute('id', trending[i]);
+                                //x.setAttribute('href', "http://www.facebook.com");
+                                //console.log('new');
+                            }
+                            
+                        </script>
+                            <!--
+                            {% for t, c in trending.items %}
+                                {% if forloop.counter < 20 %}
+                                <th ><a id= "{{t}}"  href="{% url 'summary' t %}">{{t}}</a></th>
+                                }
+                                {% endif %}
+                            {% endfor %}
+                            -->
+                        
                     </tr>
                 </table>
             </div>
@@ -273,7 +312,13 @@
                 </div>
             
             </div>
-            <div class="col-md-8">
+            <div class="col-md-4" style="padding-left: 20px;">
+                {% block quote_block %}
+                {% endblock %}
+                
+            </div>
+            <div class="col-md-4">
+                
             </div>
         </div>
     </div>

@@ -2,6 +2,7 @@ import urllib
 import datetime as dt
 import pandas as pd
 from pandas_datareader import data as web
+import pandas_datareader as pdr
 #import requests
 #import matplotlib.pyplot as plt
 
@@ -128,18 +129,25 @@ def get_intraday(ticker, day=1):
     
     return df
 
-   
-    
-df = get_google_data('FB', 60, 1, 'NASDAQ' )
-def get_historical():
-    end = dt.date.today()
-    start = end - dt.timedelta(365/12)
-    
-    quote = web.DataReader("FB", 'yahoo', start, end)
-    
-    return quote
-    
 
+
+#df = get_google_data('FB', 60, 1, 'NASDAQ')
+
+# one week historical data 
+def get_historical(ticker, period = 1825):
+    
+    if dt.datetime.now().hour > 16:
+        end = dt.date.today()
+        start = end - dt.timedelta(period - 1)
+    else:
+        end = dt.date.today() - dt.timedelta(1)
+        start = end - dt.timedelta(period)
+    
+    #quote = web.DataReader(ticker, data_source='yahoo', start=start, end=end)
+    quote = pdr.get_data_yahoo(ticker, start=start, end=end)
+    quote.columns = quote.columns.str.lower()
+
+    return quote   
 
 def yahoo_info(tik):
     url = ('http://finance.yahoo.com/quote/'

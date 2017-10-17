@@ -1,4 +1,5 @@
 from django.conf.urls import url
+'''
 from riskyNumber import views
 
 urlpatterns = [ url(r'^$', views.index, name = 'home'), # rango/
@@ -20,4 +21,4 @@ urlpatterns = [ url(r'^$', views.index, name = 'home'), # rango/
                url(r'^profile/(?P<username>[\w\-]+)/$', views.profile, name = 'profile'),
                url(r'^fillings/$', views.fillings, name = 'fillings'),
             ]
-            
+'''        

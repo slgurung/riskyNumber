@@ -7,6 +7,32 @@
     
 {% endblock %}
 
+{% block quote_block %}
+
+    <table style="width: 100%; height: 30px;">
+        <tr id="currentQuote" style="vertical-align: bottom;">
+
+        </tr>
+    </table>
+    <script>
+        var summary = {{summary|safe}};
+        var symbol = "{{ticker}}";
+        var changed = summary.Changed
+        if (changed > 0){
+            var changedType = "green";
+        } else if(changed < 0){
+            var changedType = "red";
+        } else{
+            var changedType = "blue";
+        }
+        
+        var cq = "<td><strong style='color:#006699;'>" + symbol + ":&nbsp</strong>" + summary.Last + "&nbsp&nbsp&nbsp<span style='color:" + changedType + "';>" + summary.Changed + "&nbsp(" + summary['% Changed'] + ")</span>&nbsp&nbsp&nbspVolume:&nbsp" + parseInt(summary.Volume).toLocaleString('en') + "</td>";
+
+        document.getElementById("currentQuote").innerHTML = cq;
+    </script>
+
+{% endblock %}
+
 {% block chart_block %}
     <div style="padding:3px 2px 5px 2px;">
         <ul class="nav nav-tabs" style="background-color:rgb(242, 242, 242);">
@@ -14,19 +40,19 @@
             <li style="width:30%;text-align:center;"><a id="candlestick" href="#candle" >CandleStick</a></li>
             <li style="width:30%;text-align:center;"><a id="fillingList" href="#filling" >Fillings</a></li>
         </ul>
-        <div class="tab-content" style="height:325px; background-color:rgb(242, 242, 242);">
+        <div class="tab-content" style="height:375px; background-color:rgb(242, 242, 242);">
             <div id="line" class="tab-pane fade in active"></div>
             <div id="candle" class="tab-pane fade"></div>
-            <div id="filling" class="tab-pane fade" style="height:300px;width:100%;background-color:white;">Downloading... Come back please.</div>
+            <div id="filling" class="tab-pane fade" style="height:350px;width:100%;background-color:white;">Downloading... Check back later.</div>
             <div class="histChart" style="padding:5px 0px 0px 20px;">
                 <ul class="list-inline">
-                    <li><a id="d1" href="#">1D</a></li>
-                    <li><a id="d5" href="#">5D</a></li>
-                    <li><a id="m1" href="#">1M</a></li>
-                    <li><a id="m6" href="#">6M</a></li>
-                    <li><a id="y1" href="#">1Y</a></li>
-                    <li><a id="y2" href="#">2Y</a></li>
-                    <li><a id="y5" href="#">5Y</a></li>
+                    <li><a id="30" href="#" style="color: rgb(0,170,0);">1M</a></li>
+                    <li><a id="60" href="#" style="color: rgb(0,170,0);">2M</a></li>
+                    <li><a id="90" href="#" style="color: rgb(0,170,0);">3M</a></li>
+                    <li><a id="180" href="#" style="color: rgb(0,170,0);">6M</a></li>
+                    <li><a id="365" href="#" style="color: rgb(0,170,0);">1Y</a></li>
+                    <li><a id="730" href="#" style="color: rgb(0,170,0);">2Y</a></li>
+                    <li><a id="1825" href="#" style="color: rgb(0,170,0);">5Y</a></li>
                  
                 </ul>
             </div>
@@ -34,14 +60,12 @@
     </div>      
     
     <script>               
-        var chartPeriod = "d1";  
+        var chartPeriod = "90";  
         var chartType = "scatter";              
                 
-        var symbol = "{{ticker}}"; 
+        //var symbol = "{{ticker}}"; 
         var name = "{{name|safe}}";              
-        var start = "{{start|safe}}";
-        var end = "{{end|safe}}";            
-       
+          
         var dateVal = {{date|safe}}; //.map(function(d) {return new Date(d);});
         var min = {{ min }};
         var max = {{ max }};
@@ -50,9 +74,11 @@
         var lowVal = {{ low }};
         var closeVal = {{ close }}; 
                        
-        var vol = '';               
-        var volmn = '';
-        var volmx = '';
+        var vol = {{ vol }};               
+        var realVol = {{ realVol }}.map(function(v) {
+                                            return v.toLocaleString('en');
+                                        });
+        document.getElementById(chartPeriod).style.color = "rgb(170,0,0)";
     </script>
     
 {% endblock %}
@@ -70,7 +96,7 @@
         </thead>
         <tbody id="sTable">
             <script>
-                var summary = {{summary|safe}};
+                //var summary = {{summary|safe}};
                 var keys = {{fundamentals|safe}};
                 var i;
                 var summaryTable = "";
@@ -92,7 +118,7 @@
 
 {% block stock_news %}
     <div class="jumbotron" style="padding:10px 10px 10px 20px; margin:auto;">
-                    <strong>The Street's views on Stock:</strong>
+                    <strong>The Street's views on Stocks:</strong>
     </div>
     <script>
         var news = {{ stockNews|safe }};

@@ -1,6 +1,6 @@
 #import psycopg2
 #import feedparser
-#import pandas as pd
+import pandas as pd
 #import time
 #from subprocess import check_output
 
@@ -13,102 +13,93 @@ def get_trending():
     nyse = 'http://www.nasdaq.com/markets/most-active.aspx?exchange=NYSE'
     amex = 'http://www.nasdaq.com/markets/most-active.aspx?exchange=AMEX'
          
-#    mostActiveList = []
-#    mostAdvancedList = []
-#    mostDeclinedList = []   
-    
-    trendList = []
-      
-    # Nasdaq
+    mostActiveList = []
+    mostAdvancedList = []
+    mostDeclinedList = []    
+    trendDict = {}
+
     response = requests.get(nasdaq)
     soup = bs(response.content, "lxml")    
     
     #activeStocks = response.css('div#_active a.mostactive')
-    mostActive = soup.find('div', id='_active')
+    # mostActive = soup.find('div', id='_active')
     mostAdvanced = soup.find('div', id='_advanced')
     mostDeclined = soup.find('div', id='_declined')
     #print(mostAdvanced.prettify())
-    mostActive = mostActive.find_all('h3')[1:4]
-    mostAdvanced = mostAdvanced.find_all('h3')[1:5]
-    mostDeclined = mostDeclined.find_all('h3')[1:6]
+    # mostActive = mostActive.find_all('h3')[1:2]
+    mostAdvanced = mostAdvanced.find_all('h3')[1:15]
+    mostDeclined = mostDeclined.find_all('h3')[1:15]
     
-    for h in mostActive:
-        symbol = h.string
-        if Stock.objects.filter(ticker__iexact=symbol).exists():
-            trendList.append(symbol)
-        #mostActiveList.append(symbol)
+    # for h in mostActive:
+    #     symbol = h.string
+    #     mostActiveList.append(symbol)
     for h in mostAdvanced:
         symbol = h.string
-        if Stock.objects.filter(ticker__iexact=symbol).exists():
-            trendList.append(symbol)
-        #mostAdvancedList.append(symbol)
+        trendDict[symbol] = 'green'
+        mostAdvancedList.append(symbol)
     for h in mostDeclined:
         symbol = h.string
-        if Stock.objects.filter(ticker__iexact=symbol).exists():
-            trendList.append(symbol)
-        #mostDeclinedList.append(symbol)   
+        trendDict[symbol] = 'red'
+        mostDeclinedList.append(symbol)   
     
     ### NYSE
     response = requests.get(nyse)
     soup = bs(response.content, "lxml")    
     
-    mostActive = soup.find('div', id='_active')
+    #mostActive = soup.find('div', id='_active')
     mostAdvanced = soup.find('div', id='_advanced')
     mostDeclined = soup.find('div', id='_declined')
     #print(mostAdvanced.prettify())
-    mostActive = mostActive.find_all('h3')[1:1]
-    mostAdvanced = mostAdvanced.find_all('h3')[1:2]
-    mostDeclined = mostDeclined.find_all('h3')[1:2]
+    #mostActive = mostActive.find_all('h3')[1:1]
+    mostAdvanced = mostAdvanced.find_all('h3')[1:4]
+    mostDeclined = mostDeclined.find_all('h3')[1:4]
     
-    for h in mostActive:
-        symbol = h.string
-        if Stock.objects.filter(ticker__iexact=symbol).exists():
-            trendList.append(symbol)
-        #mostActiveList.append(symbol)
+    # for h in mostActive:
+    #     symbol = h.string
+    #     mostActiveList.append(symbol)
     for h in mostAdvanced:
         symbol = h.string
-        if Stock.objects.filter(ticker__iexact=symbol).exists():
-            trendList.append(symbol)
-        #mostAdvancedList.append(symbol)
+        trendDict[symbol] = 'green'
+        mostAdvancedList.append(symbol)
     for h in mostDeclined:
         symbol = h.string
-        if Stock.objects.filter(ticker__iexact=symbol).exists():
-            trendList.append(symbol)
-        #mostDeclinedList.append(symbol)    
+        trendDict[symbol] = 'red'
+        mostDeclinedList.append(symbol)    
     
     ### AMEX
     response = requests.get(amex)
     soup = bs(response.content, "lxml")    
     
-    mostActive = soup.find('div', id='_active')
+    #mostActive = soup.find('div', id='_active')
     mostAdvanced = soup.find('div', id='_advanced')
     mostDeclined = soup.find('div', id='_declined')
     #print(mostAdvanced.prettify())
-    mostActive = mostActive.find_all('h3')[1:2]
+    #mostActive = mostActive.find_all('h3')[1:2]
     mostAdvanced = mostAdvanced.find_all('h3')[1:2]
     mostDeclined = mostDeclined.find_all('h3')[1:2]
     
-            
-    for h in mostActive:
-        symbol = h.string
-        if Stock.objects.filter(ticker__iexact=symbol).exists():
-            trendList.append(symbol)
-            #mostActiveList.append(symbol)
+    # for h in mostActive:
+    #     symbol = h.string
+    #     if Stock.objects.filter(ticker__iexact=symbol).exists():
+    #         mostActiveList.append(symbol)
     for h in mostAdvanced:
         symbol = h.string
-        if Stock.objects.filter(ticker__iexact=symbol).exists(): 
-            trendList.append(symbol)
-            #mostAdvancedList.append(symbol)
+        if Stock.objects.filter(ticker__iexact=symbol).exists():
+            trendDict[symbol] = 'green'
+            mostAdvancedList.append(symbol)
     for h in mostDeclined:
         symbol = h.string
         if Stock.objects.filter(ticker__iexact=symbol).exists():
-            trendList.append(symbol)
-            #mostDeclinedList.append(symbol)    
+            trendDict[symbol] = 'red'
+            mostDeclinedList.append(symbol)    
        
-    #set1 = set(mostAdvancedList + mostDeclinedList)
+    set1 = set(mostAdvancedList + mostDeclinedList)
     #set2 = set(mostActiveList)
-    #trendList = set2.union(set1)    
+    trendSet = set1 #set2.union(set1)    
+    tikCikDf = pd.read_csv('tickerCik.txt', index_col = 0, dtype = {'CIK': str})
+    symbols = set(tikCikDf.Symbol)
     
+    #trendList = list(trendSet & symbols)
+    trendDict= {k:v for k, v in trendDict.items() if k in symbols}
     
-    
-    return trendList # mostActiveList, mostAdvancedList, mostDeclinedList
+    return trendDict #trendList # mostActiveList, mostAdvancedList, mostDeclinedList

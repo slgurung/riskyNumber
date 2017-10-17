@@ -279,15 +279,16 @@ function lineChartD5(x, y, mn, mx) {
 
 
 function hLineChart(x, y, v, mn, mx) { 
+
     document.getElementById("scatter").innerHTML = symbol + ": " + name;
-                                   
+                              
     var chartWidth = document.getElementById("line").parentElement.clientWidth;                       
     var d3 = Plotly.d3; 
     //need to put #                                         
     var gd3 = d3.select("#line") 
                 .style({
                         width: (chartWidth - 2) +'px' ,
-                        height: "300px",
+                        height: "350px",
                 });
     var gd = gd3.node(); //make global variable
             
@@ -298,8 +299,10 @@ function hLineChart(x, y, v, mn, mx) {
                 type: 'scatter',
                 fill: 'tozeroy',
                 line: {color:'rgb(0,200,255)'},
-                name: 'Price',  
-                    
+                name: 'Price',
+                //hovertext: y,
+                //hoverinfo: 'text',
+
             };
     var data2 = {
                 x: x,
@@ -311,7 +314,8 @@ function hLineChart(x, y, v, mn, mx) {
                         color: 'rgb(0, 115, 150)'
                 },  
                 name: 'Volume',
-                hoverinfo: "skip",
+                text: realVol,
+                hoverinfo: 'x+text+name',
             };
     var trace = [data1, data2];
             
@@ -341,12 +345,25 @@ function hLineChart(x, y, v, mn, mx) {
                             
                     },
                 yaxis2: {
-                        range: [volmn, volmx],
+                        range: [mn, mx], //[volmn, volmx],
                         fixedrange: true,
                         //overlaying: "y",
                         showgrid: false,
                     },
-                };
+                shapes: {
+                        type: 'line',
+                        x0: '2017-10-12',
+                        y0: 0,
+                        x1: '2017-10-12',
+                        //yref: 'paper',
+                        y1: 22500,
+                        line: {
+                            color: 'black',
+                            dash: 'dot',
+                            width: 1.5,
+                        },
+                },
+            };
     Plotly.newPlot(gd, trace, layout, {scrollZoom: true, 
                                             displayModeBar: false });
                                      
@@ -358,7 +375,7 @@ function hCandleChart(x, o, h, l, c, mn, mx) {
             var gd3 = d3.select("#candle")
                         .style({
                                 width: (chartWidth - 2) +'px' ,
-                                height: "300px"
+                                height: "350px"
                            });
             var gd = gd3.node(); 
              
@@ -484,20 +501,20 @@ $(document).ready(function(){
         //console.log('chartype ' + chartType, 'chartperiod ' + chartPeriod );
         if ( id == "candlestick"){
             chartType = "candlestick";
-            if (chartPeriod == 'd1'){
-                candleChart(dateVal, openVal, highVal, lowVal, closeVal, min, max);  
-            }else {
-                hCandleChart(dateVal, openVal, highVal, lowVal, closeVal, min, max);  
-            }
+            //if (chartPeriod == 'd1'){
+            //    candleChart(dateVal, openVal, highVal, lowVal, closeVal, min, max);  
+            //}else {
+            hCandleChart(dateVal, openVal, highVal, lowVal, closeVal, min, max);  
+            //}
         }else if (id == "scatter"){
             chartType = "scatter";    
-            if(chartPeriod == 'd1'){
-                lineChart(dateVal, closeVal, min, max); 
-            }else if(chartPeriod == 'd5'){
-                lineChartD5(dateVal, closeVal, min, max); 
-            }else{
-                hLineChart(dateVal, closeVal, vol, min, max);       
-            }
+            //if(chartPeriod == 'd1'){
+            //    lineChart(dateVal, closeVal, min, max); 
+            //}else if(chartPeriod == 'd5'){
+            //    lineChartD5(dateVal, closeVal, min, max); 
+            //}else{
+            hLineChart(dateVal, closeVal, vol, min, max);       
+            //}
         }else{
             chartType = "fillingList";    
             
@@ -536,7 +553,10 @@ $(document).ready(function(){
        
         if (chartPeriod != id)
         {
+            document.getElementById(chartPeriod).style.color = "rgb(0,170,0)";
+            document.getElementById(id).style.color = "rgb(170,0,0)";
             chartPeriod = id;
+
             //console.log(id + symbol);
             $.ajax({
                     url: "/hChart/",
@@ -554,33 +574,90 @@ $(document).ready(function(){
                                 highVal = data.high;
                                 lowVal = data.low;
                                 closeVal = data.close;   
-                                volmn = data.volMin;
-                                volmx = data.volMax;
+                                realVol = data.realVol.map(function(v) {
+                                                            return v.toLocaleString('en');
+                                                            });
+                                // volmn = data.volMin;
+                                // volmx = data.volMax;
                                 //console.log(dateVal); 
-                                if ((chartPeriod != 'd1') && (chartPeriod != 'd5')){  
-                                    hLineChart(dateVal, closeVal, vol, min, max);  
-                                }else if (chartPeriod == 'd5'){
-                                    lineChartD5(dateVal, closeVal, min, max); 
-                                }else {
-                                    //dateVal = dateVal.map(function(d) {return new Date(d * 1000);});
-                                    start = data.start;
-                                    end = data.end;
-                                    lineChart(dateVal, closeVal, min, max); 
-                                }
+                                //if ((chartPeriod != 'd1') && (chartPeriod != 'd5')){  
+                                // need to call this function because whole doc is not
+                                // reloaded
+                                hLineChart(dateVal, closeVal, vol, min, max);  
+                                // }else if (chartPeriod == 'd5'){
+                                //     lineChartD5(dateVal, closeVal, min, max); 
+                                // }else {
+                                //     //dateVal = dateVal.map(function(d) {return new Date(d * 1000);});
+                                //     start = data.start;
+                                //     end = data.end;
+                                //     lineChart(dateVal, closeVal, min, max); 
+                                // }
                             },
                     
              });
         }
         
     });
-     
+
+    function resizeTrend(w){
+        //var trendWidth = document.getElementById("trendTable").parentElement.clientWidth;
+        for ( i=0; i < colNum; i++){
+            trendCell.deleteCell(-1);
+        }
+
+        colNum = parseInt(w/50);
+
+        if (tikNum < colNum){
+            colNum = tikNum;
+        }
+
+        //var oldColNum = parseInt(trendWidth/50);
+
+        // console.log('new:' + w);
+        // console.log('old:' + trendWidth);
+
+        //var trendCell = document.getElementById("trendRow");
+        //var adjNum = oldColNum - newColNum
+        //trendWidth = w;
+
+        // if (adjNum < 0){
+        //     adjNum = Math.abs(adjNum)
+        //     for ( i=1; i < adjNum; i++){
+        //         var x = trendCell.insertCell(-1);
+        //         x.innerHTML = i + 'cell';
+        //     }
+        // } else if(adjNum > 0){
+        //     for ( i = 1; i < adjNum; i++){
+        //         trendCell.deleteCell(-1);
+        //     }
+        // }
+
+        
+        // for ( i=0; i < newColNum; i++){
+        //     var x = trendCell.insertCell(-1);
+        //     x.innerHTML = i + 'cell';            
+        // }
+
+        for (i = 0; i < colNum; i++){
+                                
+            var x = trendCell.insertCell(-1);
+            // x.innerHTML = "<a id= " + trending[i] +  ">" + trending[i] + "</a>";
+            x.innerHTML = "<a id= " + trending[i] + " href = /summary/" 
+                    + trending[i] + "/ " + " style= color:" + trendType[i] 
+                    +"; >" + trending[i] + "</a>";
+
+        }
+    }
+    
     $(window).resize(function(){
         //updates chartWidth
-        var chartWidth = document.getElementById("line").parentElement.clientWidth;                  
+        chartWidth = document.getElementById("line").parentElement.clientWidth;                  
         resizeChart(chartWidth);
+        resizeTrend(chartWidth);
+
     });
             
-    lineChart(dateVal, closeVal, min, max);
+    hLineChart(dateVal, closeVal, vol, min, max);
 });  
                                         
                                         

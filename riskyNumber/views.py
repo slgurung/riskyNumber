@@ -4,23 +4,19 @@ from math import pi
 import pandas as pd
 import numpy as np
 from pandas_datareader import data as web
+import pandas_datareader as pdr
 import feedparser
 from datetime import datetime as dt
 from datetime import date, timedelta
-from yahoo_finance import Share as yf
 
-#from bokeh.plotting import figure
-#from bokeh.io import save, output_file, show
-#from bokeh.embed import components
-#from bokeh.resources import CDN
-#from bokeh.models import *
+from yahoo_finance import Share as yf
 
 #####################################
 
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect
 # Create your views here.
-from riskyNumber.intradayData import get_intraday, get_google_data
+from riskyNumber.intradayData import get_intraday, get_google_data, get_historical
 from riskyNumber.fillings import get_fillings
 from riskyNumber.trending import get_trending
 from riskyNumber.models import Exchange, Stock, UserProfile, Trending
@@ -32,32 +28,45 @@ from django.http import JsonResponse
 from django.contrib.auth.decorators import login_required
 from registration.backends.simple.views import RegistrationView
 
+# to store quote locally ##########
+indexTicker = '^DJI' 
+indexDf = get_historical(indexTicker)
 
+updateQuote = True
 
+stkQuote = {'ticker': None, 'df': None} 
+#########################################
+# to scrape sec fillings
 tikCikDict = {}
 if not tikCikDict:
-    tikCikDf = pd.read_csv('tickerCik.txt', index_col = 0, na_values = ['', 'NaN'], dtype = {'CIK': str})
+    tikCikDf = pd.read_csv('tickerCik.txt', index_col = 0, dtype = {'CIK': str})
     tikCikDict = dict(zip(list(tikCikDf.Symbol), list(tikCikDf.CIK)))
-    #print('seting CIK dictionary **************************')
+###########################################
 
 fillingDict={}
+
+### to delete all stocks from database ###
+#Stock.objects.all().delete()
+##########################################
 
 ####### do something for begining setup
 #trendList = []
 
-
-# ******************At the beginning Need to disable this block before database is initialized
-#if Trending.objects.all().exist():
-#    Trending.objects.all().delete()
-    
+# **At the beginning Need to disable this block before database is initialized
+# Trending.objects.all().delete()
 trendList = get_trending()
-#for t in trendList:
-#    trendStk = Trending(ticker = t)
-#    trendStk.save()
-# ***************************************************
+updateTrend = True
+### to save trendList in database
+# for t in trendList:
+#     trendStk = Trending(ticker = t)
+#     trendStk.save()
+#*****************************************
 
-stkIndex = {'.INX': 'S&P 500', '.DJI': 'Dow Jones Industrial' , '.IXIC': 'Nasdaq Composite'}
-indexEx = {'.INX': 'INDEXSP', '.DJI': 'INDEXDJX' , '.IXIC': 'INDEXNASDAQ'}
+
+stkIndex = {'^GSPC': 'S&P 500', '^DJI': 'Dow Jones Industrial' , '^IXIC': 'Nasdaq Composite'}
+# for google finance url
+#stkIndex = {'.INX': 'S&P 500', '.DJI': 'Dow Jones Industrial' , '.IXIC': 'Nasdaq Composite'}
+#indexEx = {'.INX': 'INDEXSP', '.DJI': 'INDEXDJX' , '.IXIC': 'INDEXNASDAQ'}
 
 def about(request):
     
@@ -68,68 +77,189 @@ def about(request):
     return render(request, 'riskyNumber/about.html', context_dict)
 
 def index(request):
+    global updateQuote
+    global indexDf
+    global trendList
+    global updateTrend
+    global indexTicker
+
     context_dict = {}
+    #################
+    quotePeriod = 90 # need to match to chartPeriod at index.html
+
+    ######## to store quote locally
+    current_hour = dt.now().hour
+    if current_hour > 16:
+        if updateQuote:
+            updateQuote = False # do I need to use globally to update globally???
+            indexDf = get_historical(indexTicker)
+        startDate = date.today() - timedelta(quotePeriod - 1)
+        quote = indexDf[startDate: ]        
+    else:
+        updateQuote = True 
+        startDate = date.today() - timedelta(quotePeriod)
+        quote = indexDf[startDate: ]
+
+    if current_hour > 11:
+        if updateTrend:
+            trendList = get_trending()
+            updateTrend = False
+    else:
+        updateTrend = True
+
+    context_dict['trending'] = list(trendList.keys())
+    context_dict['trendType'] = list(trendList.values())
+
+    context_dict['ticker'] = indexTicker    
+    context_dict['name'] = stkIndex[indexTicker]
     
-    context_dict['trending'] = trendList
-    ticker = '.INX'  #trendList[0]
-    context_dict['ticker'] = ticker    
-    context_dict['name'] = 'S&P 500'
-    ##########################################################        
-    #if ticker not in fillingDict:
-    #    fThread = fillingThread('filling:' + ticker, ticker)
-    #    fThread.start()
-    ##########################################################
-    #trend = []
-    #for symbol in trending:
-    #    tikVals = yf(symbol)
-    #    if (float(tikVals.get_percent_change().split('%')[0]) > 0):
-    #        trend.append("green")
-    #    else:
-    #        trend.append("red")
-    #context_dict['trend'] = trend  
-    
-    #request.session.set_test_cookie()
-    #exchange_list = Exchange.objects.all()
-    #page_list = Page.objects.order_by('-views')[:5]
-    #context_dict = {'exchanges': exchange_list}
-    # obtain response obj before return to add cookie
-    #response = render(request, 'rango/index.html', context_dict)
-    #visitor_cookie_handler(request, response)
     visitor_cookie_handler(request)
     context_dict['visits'] = request.session['visits']
     
-    context_dict['summary'], context_dict['fundamentals'] = get_summary(ticker)   
+    #context_dict['summary'], context_dict['fundamentals'] = get_summary(indexTicker)   
     
-    #quote = get_intraday(ticker)    #[0:50]
-    quote = get_google_data(ticker, 60, 1, 'INDEXSP')
-    #quote = quote.applymap(lambda x: pd.to_numeric(x)) # already converted to numeric
-
-    #dateSeries = quote.date.map(lambda x: dt.fromtimestamp(x))
-    #context_dict['date'] = list(quote.date)
-    #startDate = dt.fromtimestamp(quote.date[0])
-    #startDate = startDate.date().strftime("%Y-%m-%d")
-    #startDate = dateSeries[0].date().strftime("%Y-%m-%d")
-    i = list(quote.index.strftime("%Y-%m-%d %H:%M:%S"))
+    i = list(quote.index.strftime("%Y-%m-%d"))
     
     context_dict['date'] = i #list(dateSeries.map(str)) # change Timestamp obj to string. but don't work strftime()
-    startDate = i[0].split(' ')[0]
-        
-    context_dict['start'] = startDate + ' 9:30:00'
-    context_dict['end'] = startDate + ' 16:00:00'
-       
-    context_dict['close'] = list(quote['close'])
+           
+    context_dict['close'] = list(quote['adj close'])
     context_dict['open'] = list(quote.open)
     context_dict['high'] = list(quote.high)
     context_dict['low'] = list(quote.low)
-    #context_dict['vol'] = quote.volume
     
-    context_dict['min'] = min(context_dict['low'])
-    context_dict['max'] = max(context_dict['high'])  
+    minClose = min(context_dict['close']) # min() is build-in fn
+    context_dict['max'] = max(context_dict['high']) 
     
-    context_dict['businessNews'], context_dict['stockNews'] = news(ticker) # save this for quick download
+    context_dict['min'] = minClose - ((context_dict['max'] - minClose) * .25)
+
+    maxVol = quote.volume.max()
+    minVol = quote.volume.min()
+    
+    y = (max(context_dict['low']) + quote.high.min()) * 0.5 
+    x = context_dict['min'] * 0.9 + minClose * 0.1
+       
+    context_dict['vol'] = list(((quote.volume - minVol) * ((y-x)/(maxVol - minVol))) + x)  
+    
+    context_dict['realVol'] = list(quote.volume)
+    context_dict['businessNews'], context_dict['stockNews'] = news(indexTicker) # save this for quick download
    
-    return render(request, 'riskyNumber/index.html', context_dict)
+    return render(request, 'riskyNumber/index.html', context_dict) # 'riskyNumber/index.html' is template location not url
+
+def summary(request, ticker):
+    #exchange = 'NASDAQ'
+    global stkQuote  # to update stkQuote values
+    quotePeriod = 90 # need to match with chartPeriod at summary.html
+    context_dict = {}
+
+    if ticker == indexTicker:
+        startDate = date.today() - timedelta(quotePeriod)
+        quote = indexDf[startDate: ]
+    else:
+        if stkQuote['ticker'] != ticker:
+            stkQuote['df'] = get_historical(ticker)
+            stkQuote['ticker'] = ticker
+
+        startDate = date.today() - timedelta(quotePeriod)
+        quote = stkQuote['df'][startDate: ]
+
+
+    context_dict['trending'] = list(trendList.keys())
+    context_dict['trendType'] = list(trendList.values())
+
+    context_dict['ticker'] = ticker
+                
+    if ticker not in stkIndex: #['^GSPC', '^DJI', '^IXIC']:
+        stkObj = Stock.objects.get(ticker = ticker).name.split(" ")[:2] # no error if list has one element
+        if len(stkObj) > 1:
+            context_dict['name'] = stkObj[0] + " " +stkObj[1]
+        else:
+            context_dict['name'] = stkObj[0]
+    else:
+        context_dict['name'] = stkIndex[ticker]
+        #exchange = indexEx[ticker]
     
+    if ticker not in stkIndex and ticker not in fillingDict:
+        fThread = fillingThread('filling:' + ticker, ticker)
+        fThread.start()
+    
+    if ticker not in ('^DJI', '^IXIC', '^GSPC'):
+        context_dict['summary'], context_dict['fundamentals'] = get_summary(ticker)   
+    
+    
+    i = list(quote.index.strftime("%Y-%m-%d"))
+
+    context_dict['date'] = i #list(dateSeries.map(str)) # change Timestamp obj to string. but don't work strftime()
+    
+    context_dict['close'] = list(quote['adj close'])
+    context_dict['open'] = list(quote.open)
+    context_dict['high'] = list(quote.high)
+    context_dict['low'] = list(quote.low)
+    #context_dict['vol'] = pd.to_numeric(quote.volume)
+
+    minClose = min(context_dict['close']) # min() is build-in fn
+    
+    context_dict['max'] = max(context_dict['high']) 
+    context_dict['min'] = minClose - ((context_dict['max'] - minClose) * .25)
+
+
+    maxVol = quote.volume.max() # quote.volume is Series and use series fn max()
+    minVol = quote.volume.min()
+
+    y = (max(context_dict['low']) + quote.high.min()) * 0.5 #quote['adj close'].max() #quote.high.min() 
+    x = context_dict['min'] * 0.9 + minClose * 0.1
+       
+    context_dict['vol'] = list(((quote.volume - minVol) * ((y-x)/(maxVol - minVol))) + x)  
+    
+    context_dict['realVol'] = list(quote.volume) 
+        
+    context_dict['businessNews'], context_dict['stockNews'] = news(ticker) # save this for quick download
+       
+    return render(request, 'riskyNumber/summary.html', context_dict)
+
+def hChart(request):    
+    data = {}
+    chartPeriod = request.POST.get('chartPeriod')
+    ticker = request.POST.get('ticker')
+    
+    
+    ##**** change this one
+    if ticker == indexTicker:
+        startDate = date.today() - timedelta(int(chartPeriod))
+        quote = indexDf[startDate: ]
+        
+    else:
+        startDate = date.today() - timedelta(int(chartPeriod))
+        quote = stkQuote['df'][startDate: ]
+    
+    # volume is int64 type and it is not json serializable
+    # So, it need to convert to float type to make json serializable    
+    quote.volume = quote.volume.astype('float64')
+
+    data['dateVal'] = list(quote.index.strftime("%Y-%m-%d"))       
+    data['ticker'] = ticker
+    data['close'] = list(quote['adj close'])
+    data['open'] = list(quote.open)
+    data['high'] = list(quote.high)
+    data['low'] = list(quote.low)
+    
+    minClose = min(data['close']) # min() is build-in fn
+    data['max'] = max(data['high']) 
+    data['min'] = minClose - ((data['max'] - minClose) * .25)
+
+    maxVol = quote.volume.max()
+    minVol = quote.volume.min()
+    y = (max(data['low']) + quote.high.min()) * 0.5 
+    x = data['min'] * 0.9 + minClose * 0.1
+   
+    data['vol'] = list(((quote.volume - minVol) * ((y-x)/(maxVol - minVol))) + x)  
+    
+    data['realVol'] = list(quote.volume)       
+    
+    # for json data, numeric type need to be float
+    return JsonResponse(data)
+
+
+
 def show_exchange(request):
     context_dict = {}
     
@@ -244,135 +374,48 @@ def suggest_ticker(request):
     
     # make list of obj to sortable   
     return render(request, 'riskyNumber/ticker.html', {'stocks': stock_list})
-
-
-    
+   
 
 def get_summary(ticker):
     
+    # fundamentals = ['Last', 'Open', '% Changed','Previous Close', 'Changed', 'Volume', 
+    #                 'Daily Avg. Volume', 'Year Range', 'Day Range', 'Market Cap', 'EBITDA', 
+    #                 'Book Value', '50 DMA', '200 DMA']
     fundamentals = ['Last', 'Open', '% Changed','Previous Close', 'Changed', 'Volume', 
-                    'Daily Avg. Volume', 'Year Range', 'Day Range', 'Market Cap', 'EBITDA', 
-                    'Book Value', '50 DMA', '200 DMA']
+                     'Day Range', 'Year Range']
     tikVals = yf(ticker)
     summary={}
-    if(ticker == '^DJI' or ticker == '^IXIC' or ticker == '^GSPC'):
-        summary['Last'] = str(tikVals.get_price())
-        summary['Open'] = str(tikVals.get_open())
-        summary['% Changed'] = str(tikVals.get_percent_change())
-        summary['Previous Close'] = str(tikVals.get_prev_close())
-        summary['Changed'] = str(tikVals.get_change())
-        summary['Volume'] = str(tikVals.get_volume())
-        summary['Avg. Volume'] = str(tikVals.get_avg_daily_volume())
-        #summary['Day Range'] = str(tikVals.get_days_range())
-        summary['Year Range'] = str(tikVals.get_year_range())
-        fundamentals = fundamentals[:8]
-    else:
-        summary['Last'] = str(tikVals.get_price())
-        summary['Open'] = str(tikVals.get_open())
-        summary['% Changed'] = str(tikVals.get_percent_change())
-        summary['Previous Close'] = str(tikVals.get_prev_close())
-        summary['Changed'] = str(tikVals.get_change())
-        summary['Volume'] = str(tikVals.get_volume())
-        summary['Avg. Volume'] = str(tikVals.get_avg_daily_volume())
-        summary['Day Range'] = str(tikVals.get_days_range())
-        summary['Year Range'] = str(tikVals.get_year_range())
-        summary['Market Cap'] = str(tikVals.get_market_cap())
-        summary['EBITDA'] = str(tikVals.get_ebitda())
-        summary['Book Value'] = str(tikVals.get_book_value())
-        summary['50 DMA'] = str(tikVals.get_50day_moving_avg())
-        summary['200 DMA'] = str(tikVals.get_200day_moving_avg())
+    #if ticker not in ('^DJI', '^IXIC', '^GSPC'):
+        # summary['Last'] = str(tikVals.get_price())
+        # summary['Open'] = str(tikVals.get_open())
+        # summary['% Changed'] = str(tikVals.get_percent_change())
+        # summary['Previous Close'] = str(tikVals.get_prev_close())
+        # summary['Changed'] = str(tikVals.get_change())
+        # summary['Volume'] = str(tikVals.get_volume())
+        # summary['Avg. Volume'] = str(tikVals.get_avg_daily_volume())
+        # #summary['Day Range'] = str(tikVals.get_days_range())
+        # summary['Year Range'] = str(tikVals.get_year_range())
+        # fundamentals = fundamentals[:8]
+    
+    summary['Last'] = str(tikVals.get_price())
+    summary['Open'] = str(tikVals.get_open())
+    summary['% Changed'] = str(tikVals.get_percent_change())
+    summary['Previous Close'] = str(tikVals.get_prev_close())
+    summary['Changed'] = str(tikVals.get_change())
+    summary['Volume'] = str(tikVals.get_volume())
+    #summary['Avg. Volume'] = str(tikVals.get_avg_daily_volume())
+    summary['Day Range'] = str(tikVals.get_days_range())
+    summary['Year Range'] = str(tikVals.get_year_range())
+    #summary['Market Cap'] = str(tikVals.get_market_cap())
+    #summary['EBITDA'] = str(tikVals.get_ebitda())
+    #summary['Book Value'] = str(tikVals.get_book_value())
+    #summary['50 DMA'] = str(tikVals.get_50day_moving_avg())
+    #summary['200 DMA'] = str(tikVals.get_200day_moving_avg())
     
     return summary, fundamentals
    
-def summary(request, ticker):
-    exchange = 'NASDAQ'
-    context_dict = {}
-    context_dict['ticker'] = ticker
-                
-    if ticker not in stkIndex: #['^GSPC', '^DJI', '^IXIC']:
-        stkObj = Stock.objects.get(ticker = ticker).name.split(" ")[:2] # no error if list has one element
-        if len(stkObj) > 1:
-            context_dict['name'] = stkObj[0] + " " +stkObj[1]
-        else:
-            context_dict['name'] = stkObj[0]
-    else:
-        context_dict['name'] = stkIndex[ticker]
-        exchange = indexEx[ticker]
-    
-    if ticker not in stkIndex and ticker not in fillingDict:
-        fThread = fillingThread('filling:' + ticker, ticker)
-        fThread.start()
-    
-    #trending = Trending.objects.all()
-    
-    #trending = [trend.ticker for trend in trending]
-    context_dict['trending'] = trendList
-          
-    context_dict['summary'], context_dict['fundamentals'] = get_summary(ticker)   
-    
-    #quote = get_intraday(ticker)
-    quote = get_google_data(ticker, 60, 1, exchange)
-    #quote = quote.applymap(lambda x: pd.to_numeric(x))
-    
-    #dateSeries = quote.date.map(lambda x: dt.fromtimestamp(x))
-    #context_dict['date'] = list(quote.date)
-    #startDate = dt.fromtimestamp(quote.date[0])
-    #startDate = startDate.date().strftime("%Y-%m-%d")
-    #startDate = context_dict['date'][0].date().strftime("%Y-%m-%d")
-    #context_dict['date'] = list(dateSeries.strftime("%Y-%m-%d %H:%M:%S"))
-    i = list(quote.index.strftime("%Y-%m-%d %H:%M:%S"))
-    context_dict['date'] = i #list(dateSeries.map(str)) # change Timestamp obj to string. but don't work strftime()
-    startDate = i[0].split(' ')[0]
-    
-    context_dict['start'] = startDate + ' 9:30:00'
-    context_dict['end'] = startDate + ' 16:00:00'
-        
-    context_dict['close'] = list(quote['close'])
-    context_dict['open'] = list(quote.open)
-    context_dict['high'] = list(quote.high)
-    context_dict['low'] = list(quote.low)
-    #context_dict['vol'] = pd.to_numeric(quote.volume)
-   
-    context_dict['min'] = min(context_dict['low'])
-    context_dict['max'] = max(context_dict['high'])  
-        
-    context_dict['businessNews'], context_dict['stockNews'] = news(ticker) # save this for quick download
-       
-    return render(request, 'riskyNumber/summary.html', context_dict)
 
-# not using now?  
-'''  
-def intradayValues(ticker):
-    context_dict = {}
-    quote = get_intraday(ticker)
-    quote = quote.applymap(lambda x: pd.to_numeric(x))
-    i = quote.index #range(len(quote)))
-    i = list(i.strftime("%Y-%m-%d %H:%M:%S"))
-    
-    startDate = i[0].split(' ')[0]
-    context_dict['start'] = startDate + ' 9:30:00'
-    context_dict['end'] = startDate + ' 16:00:00'
-    #context_dict['today'] = i[0].split(' ')[0]
-    context_dict['date'] = i
-    context_dict['close'] = list(quote['close'])
-    context_dict['open'] = list(quote.open)
-    context_dict['high'] = list(quote.high)
-    context_dict['low'] = list(quote.low)
-    #context_dict['vol'] = pd.to_numeric(quote.volume)
-   
-    context_dict['min'] = min(context_dict['low'])
-    context_dict['max'] = max(context_dict['high'])  
-    
-    maxVol = quote.volume.max()
-    minVol = quote.volume.min()
-    y = min(context_dict['high']) 
-    x = context_dict['min'] 
-    
-    context_dict['vol'] = list(((quote.volume - minVol) * ((y-x)/(maxVol - minVol))) + x)    
-    context_dict['volMin'] = min(context_dict['vol'])
-    context_dict['volMax']= max(context_dict['vol'])
-    return context_dict
-'''
+
 
 def quote(request): # need this view for pressing enter after ticker input
     data = {}
@@ -386,215 +429,7 @@ def quote(request): # need this view for pressing enter after ticker input
     
     return JsonResponse(data) 
 
-# not using it????  
-def update_chart(request): #for ajax
-    end = date.today()
-    start = end - timedelta(365/12)
-    if request.method == 'GET':
-        ticker = request.GET['ticker']
-    quote = web.DataReader(ticker, 'yahoo', start, end)
-    context_dict = {}
-    
-    i = quote.index #range(len(quote)))
-    i = list(i.strftime("%b%d"))
-        
-    
-    context_dict['date'] = i
-    context_dict['close'] = list(quote['Close'])
-    context_dict['open'] = list(quote.Open)
-    context_dict['high'] = list(quote.High)
-    context_dict['low'] = list(quote.Low)
-    
-    context_dict['min'] =  quote.Low.min()
-    context_dict['max'] =  quote.High.max()  
-    #context_dict['vol'] = list(quote.Volume)
-    maxVol = quote.Volume.max()
-    minVol = quote.Volume.min()
-    y = quote.High.min() * 1.01
-    x = context_dict['min']
-    #context_dict['vol'] = list(quote.Volume)
-    context_dict['vol'] = list(((quote.Volume - minVol) * ((y-x)/(maxVol - minVol))) + x)  
 
-    return render(request,'riskyNumber/updateChart.html' , context_dict)
-
-# not using it??   
-'''
-def chart(request, tkperiod): 
-    context_dict = {}
-    end = date.today()
-    chartperiod = tkperiod[-2:]
-    ticker = tkperiod[:-2]
-    
-    if(chartperiod == 'd5'):
-        start = end - timedelta(5) 
-    elif(chartperiod == 'm1'):  
-        start = end - timedelta(365/12)        
-    elif(chartperiod == 'm6'):
-        start = end - timedelta(365/2)
-    elif(chartperiod == 'y1'): 
-        start = end - timedelta(365)
-    elif(chartperiod == 'y2'): 
-        start = end - timedelta(730)
-    elif(chartperiod == 'y5'): 
-        start = end - timedelta(1825)
-    else:
-        return redirect ('summary', ticker=ticker) #summary(request, ticker)
-    
-    if(chartperiod != 'd5'):
-        quote = web.DataReader(ticker, 'yahoo', start, end)
-        quote.columns = map(str.lower, quote.columns)
-        i = quote.index #range(len(quote)))
-        i = list(i.strftime("%b %d '%y"))
-    else:
-        quote = get_intraday(ticker, 5)
-        quote = quote.applymap(lambda x: pd.to_numeric(x))
-        i = quote.index #range(len(quote)))
-        #i = list(i.strftime("%I:%M %p, %a"))
-        i = list(i.strftime("%Y-%m-%d %H:%M:%S"))
-    
-    context_dict['ticker'] = ticker
-    trending = Trending.objects.all()
-    trending = [trend.ticker for trend in trending]
-    context_dict['trending'] = trending
-    
-    context_dict['date'] = i
-    context_dict['close'] = list(quote['close'])
-    context_dict['open'] = list(quote.open)
-    context_dict['high'] = list(quote.high)
-    context_dict['low'] = list(quote.low)
-    context_dict['min'] =  quote.low.min()
-    context_dict['max'] =  quote.high.max()  
-    
-    maxVol = quote.volume.max()
-    minVol = quote.volume.min()
-    y = quote.high.min() 
-    x = context_dict['min']
-    
-    context_dict['vol'] = list(((quote.volume - minVol) * ((y-x)/(maxVol - minVol))) + x)  
-    context_dict['volMin'] = min(context_dict['vol'])
-    context_dict['volMax']= max(context_dict['vol'])
-    context_dict['businessNews'], context_dict['stockNews'] = news(ticker) # save this for quick download
-    
-    return render(request,'riskyNumber/chart.html', context_dict)
-'''
-      
-def hChart(request):
-    data = {}
-    chartPeriod = request.POST.get('chartPeriod')
-    ticker = request.POST.get('ticker')
-    
-    end = date.today()
-    
-    if ticker in stkIndex:
-        exchange = indexEx[ticker]
-    else:
-        exchange = 'NASDAQ'
-        
-    if(chartPeriod == 'd1'):
-        #quote = get_intraday(ticker)
-        #quote = quote.applymap(lambda x: pd.to_numeric(x))
-        quote = get_google_data(ticker, 60, 1, exchange)
-        data['dateVal'] = list(quote.index.strftime("%Y-%m-%d %H:%M:%S"))
-        #quote = quote.applymap(lambda x: pd.to_numeric(x))
-
-        startDate = data['dateVal'][0].split(' ')[0]
-        
-        data['start'] = startDate + ' 9:30:00'
-        data['end'] = startDate + ' 16:00:00'
-    elif(chartPeriod == 'd5'):
-        quote = get_google_data(ticker, 60, 5, exchange)
-        data['dateVal'] = list(quote.index.strftime("%Y-%m-%d %H:%M:%S")) # need to be before below change to numeric
-        # because numeric values couldn't be json serializable
-        #quote = quote.applymap(lambda x: pd.to_numeric(x))
-        #i = quote.index #range(len(quote)))
-        #i = list(i.strftime("%Y-%m-%d %H:%M:%S"))
-    elif(chartPeriod == 'm1'):  
-        if ticker in stkIndex:
-            quote = get_google_data(ticker, 86400, 30, exchange)
-        else:
-            start = end - timedelta(365/12) 
-            quote = web.DataReader(ticker, 'google', start, end)
-            quote.columns = map(str.lower, quote.columns)
-        #i = quote.index #range(len(quote)))
-        #i = list(i.strftime("%b %d '%y")) # This doesn't work in javascript end for ubuntu
-        #i = list(i.strftime("%Y-%m-%d"))
-        data['dateVal'] = list(quote.index.strftime("%Y-%m-%d"))
-    elif(chartPeriod == 'm6'):
-        if ticker in stkIndex:
-            quote = get_google_data(ticker, 86400, 180, exchange)
-        else:
-            start = end - timedelta(365/2) 
-            quote = web.DataReader(ticker, 'google', start, end)
-            quote.columns = map(str.lower, quote.columns)
-        #i = quote.index #range(len(quote)))
-        #i = list(i.strftime("%b %d '%y")) # This doesn't work in javascript end for ubuntu
-        #i = list(i.strftime("%Y-%m-%d"))
-        data['dateVal'] = list(quote.index.strftime("%Y-%m-%d"))
-    elif(chartPeriod == 'y1'): 
-        if ticker in stkIndex:
-            quote = get_google_data(ticker, 86400, 365, exchange)
-        else:
-            start = end - timedelta(365) 
-            quote = web.DataReader(ticker, 'google', start, end)
-            quote.columns = map(str.lower, quote.columns)
-        #i = quote.index #range(len(quote)))
-        #i = list(i.strftime("%b %d '%y")) # This doesn't work in javascript end for ubuntu
-        #i = list(i.strftime("%Y-%m-%d"))
-        data['dateVal'] = list(quote.index.strftime("%Y-%m-%d"))
-    elif(chartPeriod == 'y2'): 
-        if ticker in stkIndex:
-            quote = get_google_data(ticker, 86400, 730, exchange)
-        else:
-            start = end - timedelta(730) 
-            quote = web.DataReader(ticker, 'google', start, end)
-            quote.columns = map(str.lower, quote.columns)
-        #i = quote.index #range(len(quote)))
-        #i = list(i.strftime("%b %d '%y")) # This doesn't work in javascript end for ubuntu
-        #i = list(i.strftime("%Y-%m-%d"))
-        data['dateVal'] = list(quote.index.strftime("%Y-%m-%d"))
-    elif(chartPeriod == 'y5'): 
-        if ticker in stkIndex:
-            quote = get_google_data(ticker, 86400, 1825, exchange)
-        else:
-            start = end - timedelta(1825) 
-            quote = web.DataReader(ticker, 'google', start, end)
-            quote.columns = map(str.lower, quote.columns)
-        #i = quote.index #range(len(quote)))
-        #i = list(i.strftime("%b %d '%y")) # This doesn't work in javascript end for ubuntu
-        #i = list(i.strftime("%Y-%m-%d"))
-        data['dateVal'] = list(quote.index.strftime("%Y-%m-%d"))
-    
-        
-        #i = quote.index #range(len(quote)))
-        #i = list(i.strftime("%Y-%m-%d %H:%M:%S"))
-        #startDate = i[0].split(' ')[0]
-        #data['start'] = startDate + ' 9:30:00'
-        #data['end'] = startDate + ' 16:00:00'
-        
-            
-    data['ticker'] = ticker
-    data['close'] = list(quote['close'])
-    data['open'] = list(quote.open)
-    data['high'] = list(quote.high)
-    data['low'] = list(quote.low)
-    data['min'] =  quote.low.min()
-    data['max'] =  quote.high.max()  
-    
-    if chartPeriod not in ['d1', 'd5']:
-        maxVol = quote.volume.max()
-        minVol = quote.volume.min()
-        y = quote.high.min() 
-        x = data['min']
-       
-        data['vol'] = list(((quote.volume - minVol) * ((y-x)/(maxVol - minVol))) + x)  
-        data['volMin'] = min(data['vol'])
-        data['volMax']= max(data['vol'])   
-    else:
-        data['vol'] = 0  
-        data['volMin'] = 0
-        data['volMax']= 0
-        
-    return JsonResponse(data)
 
 @login_required
 def register_profile(request):
@@ -665,7 +500,7 @@ def news(ticker):
     
     return newsPosts, stockPosts
 
-class fillingThread(Thread):
+class fillingThread (Thread):
     def __init__(self, name, ticker):
         Thread.__init__(self)
         self.name = name
@@ -686,7 +521,7 @@ def fillings(request):
     if ticker in fillingDict:
         data = fillingDict[ticker]
         data['result'] = 'gotIt'
-    elif ticker in ['.INX', '.DJI', '.IXIC']:
+    elif ticker in ['^GSPC', '^DJI', '^IXIC']:
         data['result'] = 'invalid'
     else:
         data['result'] = 'gettingIt'
