@@ -30,15 +30,15 @@ urlpatterns = [
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) # PAGE 41
 '''
 urlpatterns = [ url(r'^$', views.index, name = 'home'), # rango/
-		       url(r'^admin/', admin.site.urls),
+		           url(r'^admin/', admin.site.urls),
                url(r'^about/$', views.about, name = 'about'),
                url(r'^show_exchange/$', views.show_exchange, name = 'show_exchange'),
                url(r'search/$', views.search, name = 'search'),
                url(r'^suggest/$', views.suggest_ticker, name = 'suggest_ticker'),
-               url(r'^summary/(?P<ticker>[\.\w]+)/$', views.summary, 
+               url(r'^summary/(?P<ticker>[\^\w]+)/$', views.summary, 
                                    name = 'summary'),
                url(r'^quote/$', views.quote, name = 'quote'),
-               url(r'^updateChart/$', views.update_chart, name= 'update_chart'),
+               #url(r'^updateChart/$', views.update_chart, name= 'update_chart'),
                url(r'^hChart/$', views.hChart, name='historical_chart'),
                #url(r'^chart/(?P<tkperiod>[\.\w]+)/$', views.chart, name= 'chart'),   
                url(r'^register/$', views.register, name = 'register'),
@@ -48,6 +48,6 @@ urlpatterns = [ url(r'^$', views.index, name = 'home'), # rango/
                url(r'^register_profile/$', views.register_profile, name='register_profile'),
                url(r'^profile/(?P<username>[\w\-]+)/$', views.profile, name = 'profile'),
                url(r'^fillings/$', views.fillings, name = 'fillings'),
-		       url(r'^accounts/', include('registration.backends.simple.urls')),
+		           url(r'^accounts/', include('registration.backends.simple.urls')),
             ]  + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) # PAGE 41
 

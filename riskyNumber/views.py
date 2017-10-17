@@ -665,7 +665,7 @@ def news(ticker):
     
     return newsPosts, stockPosts
 
-class fillingThread (Thread):
+class fillingThread(Thread):
     def __init__(self, name, ticker):
         Thread.__init__(self)
         self.name = name
@@ -686,7 +686,7 @@ def fillings(request):
     if ticker in fillingDict:
         data = fillingDict[ticker]
         data['result'] = 'gotIt'
-    elif ticker in ['^GSPC', '^DJI', '^IXIC']:
+    elif ticker in ['.INX', '.DJI', '.IXIC']:
         data['result'] = 'invalid'
     else:
         data['result'] = 'gettingIt'
