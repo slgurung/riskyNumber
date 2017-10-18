@@ -3,34 +3,35 @@
 
 {% block title_block %}
     
-    Quote: {{ticker}}
+    Quote: {{ticker|safe}}
     
 {% endblock %}
 
 {% block quote_block %}
+    
+    {% if ticker not in indexTickerList %}
+        <table style="width: 100%; height: 30px;">
+            <tr id="currentQuote" style="vertical-align: bottom;">
 
-    <table style="width: 100%; height: 30px;">
-        <tr id="currentQuote" style="vertical-align: bottom;">
+            </tr>
+        </table>
+        <script>
+            var summary = {{summary|safe}};
+            var symbol = "{{ticker|safe}}";
+            var changed = summary.Changed
+            if (changed > 0){
+                var changedType = "green";
+            } else if(changed < 0){
+                var changedType = "red";
+            } else{
+                var changedType = "blue";
+            }
+            
+            var cq = "<td><strong style='color:#006699;'>" + symbol + ":&nbsp</strong>" + summary.Last + "&nbsp&nbsp&nbsp<span style='color:" + changedType + "';>" + summary.Changed + "&nbsp(" + summary['% Changed'] + ")</span>&nbsp&nbsp&nbspVolume:&nbsp" + parseInt(summary.Volume).toLocaleString('en') + "</td>";
 
-        </tr>
-    </table>
-    <script>
-        var summary = {{summary|safe}};
-        var symbol = "{{ticker}}";
-        var changed = summary.Changed
-        if (changed > 0){
-            var changedType = "green";
-        } else if(changed < 0){
-            var changedType = "red";
-        } else{
-            var changedType = "blue";
-        }
-        
-        var cq = "<td><strong style='color:#006699;'>" + symbol + ":&nbsp</strong>" + summary.Last + "&nbsp&nbsp&nbsp<span style='color:" + changedType + "';>" + summary.Changed + "&nbsp(" + summary['% Changed'] + ")</span>&nbsp&nbsp&nbspVolume:&nbsp" + parseInt(summary.Volume).toLocaleString('en') + "</td>";
-
-        document.getElementById("currentQuote").innerHTML = cq;
-    </script>
-
+            document.getElementById("currentQuote").innerHTML = cq;
+        </script>
+    {% endif %}
 {% endblock %}
 
 {% block chart_block %}
@@ -63,7 +64,7 @@
         var chartPeriod = "90";  
         var chartType = "scatter";              
                 
-        //var symbol = "{{ticker}}"; 
+        var symbol = "{{ticker|safe}}"; 
         var name = "{{name|safe}}";              
           
         var dateVal = {{date|safe}}; //.map(function(d) {return new Date(d);});
@@ -84,36 +85,38 @@
 {% endblock %}
 
 {% block summary_block %}
-<div style="background-color:white;padding:0px 15px 0px 15px;" ">
-    <table class="table table-hover" style="width:100%;">
-        <thead>
-            <tr>
-                <th style="color:rgb(0,90,180);">Risky Numbers<sup>1</sup>:</th>
-                <th></th>
-                <th></th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody id="sTable">
-            <script>
-                //var summary = {{summary|safe}};
-                var keys = {{fundamentals|safe}};
-                var i;
-                var summaryTable = "";
-                for (i=0; i < keys.length; i++){
-                    if ( i%2 == 0){
-                        summaryTable += "<tr><td>" + keys[i] + "</td><td style='text-align:right;font-weight:bold;'>" 
-                                                         + summary[keys[i]] + "</td>";                  
-                    } else{
-                        summaryTable += "<td>" + keys[i] + "</td><td style='text-align:right;font-weight:bold;'>" 
-                                                     + summary[keys[i]] + "</td></tr>";     
-                    }
-                }
-                document.getElementById("sTable").innerHTML = summaryTable;
-            </script>
-        </tbody>
-    </table>
-</div>
+    {% if ticker not in indexTickerList %}
+        <div style="background-color:white;padding:0px 15px 0px 15px;" ">
+            <table class="table table-hover" style="width:100%;">
+                <thead>
+                    <tr>
+                        <th style="color:rgb(0,90,180);">Risky Numbers<sup>1</sup>:</th>
+                        <th></th>
+                        <th></th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="sTable">
+                    <script>
+                        //var summary = {{summary|safe}};
+                        var keys = {{fundamentals|safe}};
+                        var i;
+                        var summaryTable = "";
+                        for (i=0; i < keys.length; i++){
+                            if ( i%2 == 0){
+                                summaryTable += "<tr><td>" + keys[i] + "</td><td style='text-align:right;font-weight:bold;'>" 
+                                                                 + summary[keys[i]] + "</td>";                  
+                            } else{
+                                summaryTable += "<td>" + keys[i] + "</td><td style='text-align:right;font-weight:bold;'>" 
+                                                             + summary[keys[i]] + "</td></tr>";     
+                            }
+                        }
+                        document.getElementById("sTable").innerHTML = summaryTable;
+                    </script>
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
 {% endblock %}
 
 {% block stock_news %}

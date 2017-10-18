@@ -3,16 +3,27 @@
 
 
 {% block title_block %}
-    About riskyNumber
+    About RiskyNumber
+{% endblock %}
+
+{% block quote_block %}
 {% endblock %}
 
 {% block chart_block %}
-    <div style="padding: 15px 150px 50px 150px;">
-        <h3>riskyNumber:</h3>
-        <p>riskyNumber is a web platform for financial information analytics, primarily for the stock 
-        market data. This is not a commercial product. This platform is being developed for personal 
-        education & research purposes only. At the moment, this platform is in it's very early stages
-        of development.<br><br>
+    <script>
+        var symbol = {{ ticker}}; 
+    </script>
+    <div style="padding:3px 2px 5px 2px;">
+        <div>
+            <div id="line">
+                
+            </div>
+        </div>
+    </div>
+    <div style="padding: 15px 20px 50px 20px;">
+        <h3>RiskyNumber:</h3>
+        <p>RiskyNumber is a web platform for financial information analytics, primarily for the stock market data. This is not a commercial product. This platform is being developed for personal 
+        education & research purposes only. At the moment, this platform is in it's very early stages of development.<br><br>
         The majority of information is derived from the various websites using numerous web-scraping
         technologies based on Python. I can't be sure about the accuracy of financial data and other
         information you find in this platform. In the future, the financial data and information might 
@@ -25,11 +36,13 @@
         </p>
         <br>
     
-        <pre style="font-size:16px;">Technologies in riskyNumber:</pre>
+        <pre style="font-size:16px;">Technologies in RiskyNumber:</pre>
         
         <ul class="list-inline" style="font-size:12px;horizontal-align:center;">
             <li>Python</li>
             <li>Django</li>
+            <li>Pandas</li>
+            <li>Beautiful Soup</li>
             <li>html 5</li>
             <li>CSS</li>
             <li>JavaScript</li>

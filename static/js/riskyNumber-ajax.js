@@ -600,48 +600,21 @@ $(document).ready(function(){
     });
 
     function resizeTrend(w){
-        //var trendWidth = document.getElementById("trendTable").parentElement.clientWidth;
+        
         for ( i=0; i < colNum; i++){
             trendCell.deleteCell(-1);
         }
 
-        colNum = parseInt(w/50);
+        colNum = parseInt(w/60);
 
         if (tikNum < colNum){
             colNum = tikNum;
         }
 
-        //var oldColNum = parseInt(trendWidth/50);
-
-        // console.log('new:' + w);
-        // console.log('old:' + trendWidth);
-
-        //var trendCell = document.getElementById("trendRow");
-        //var adjNum = oldColNum - newColNum
-        //trendWidth = w;
-
-        // if (adjNum < 0){
-        //     adjNum = Math.abs(adjNum)
-        //     for ( i=1; i < adjNum; i++){
-        //         var x = trendCell.insertCell(-1);
-        //         x.innerHTML = i + 'cell';
-        //     }
-        // } else if(adjNum > 0){
-        //     for ( i = 1; i < adjNum; i++){
-        //         trendCell.deleteCell(-1);
-        //     }
-        // }
-
-        
-        // for ( i=0; i < newColNum; i++){
-        //     var x = trendCell.insertCell(-1);
-        //     x.innerHTML = i + 'cell';            
-        // }
-
         for (i = 0; i < colNum; i++){
                                 
             var x = trendCell.insertCell(-1);
-            // x.innerHTML = "<a id= " + trending[i] +  ">" + trending[i] + "</a>";
+            
             x.innerHTML = "<a id= " + trending[i] + " href = /summary/" 
                     + trending[i] + "/ " + " style= color:" + trendType[i] 
                     +"; >" + trending[i] + "</a>";
@@ -651,10 +624,12 @@ $(document).ready(function(){
     
     $(window).resize(function(){
         //updates chartWidth
-        chartWidth = document.getElementById("line").parentElement.clientWidth;                  
-        resizeChart(chartWidth);
-        resizeTrend(chartWidth);
-
+        newRowWidth = document.getElementById("line").parentElement.clientWidth;                  
+        // to exclude about
+        if ( symbol != 1234){
+            resizeChart(newRowWidth);
+        }
+        resizeTrend(newRowWidth);
     });
             
     hLineChart(dateVal, closeVal, vol, min, max);

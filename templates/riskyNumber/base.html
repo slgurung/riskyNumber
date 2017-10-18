@@ -13,8 +13,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge"> 
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
     
-    <link rel="icon" href="{% static "images/favicon.ico" %}" /> 
-    <link rel="stylesheet" href="{% static "js/signin.css" %}" /> 
+    <link rel="icon" href="{% static 'images/favicon.ico' %}" /> 
+    <link rel="stylesheet" href="{% static 'js/signin.css' %}" /> 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
     <script src="https://d3js.org/d3.v4.min.js"></script> 
     
@@ -56,7 +56,7 @@
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="#" style="color:rgb(0,51,51);" >riskyNumber</a> 
+            <a class="navbar-brand" href="#" style="color:rgb(0,51,51);" >RiskyNumber</a> 
         </div>
         <div class="collapse navbar-collapse" id="topNavbar" > 
             <ul class="nav navbar-nav"> 
@@ -239,24 +239,15 @@
                     <tr id='trendRow' style="text-align:center;">
                         <td style="font-size:18px; background-color: rgb(100,0,0); text-align: center; color: rgb(0,255,0);border-radius:10px 10px 10px 10px;">
                             Trending:</td>  
-                        <!--              
-                        {% for t in trending %}
-                            {% if forloop.last %}
-                                <th ><a id= "{{t}}"  href="{% url 'summary' t %}">{{t}}</a></th>
-                            {% else %}
-                                <th ><a id= "{{t}}"  href="{% url 'summary' t %}">{{t}}</a></th>
-                            {% endif %}
-                        {% endfor %}
-                        -->
+                        
                         <script>
 
                             var trendWidth = document.getElementById("trendTable").parentElement.clientWidth;
-                            var colNum = parseInt(trendWidth/50);
+                            var colNum = parseInt(trendWidth/60);
                             var trendCell = document.getElementById("trendRow");
-                            console.log(colNum);
                             
-                            var trending = {{ trending|safe }};
-                            var trendType = {{ trendType|safe }};
+                            var trending = {{ trending | safe }};
+                            var trendType = {{ trendType | safe}};
                             var tikNum = trending.length;
                             if (tikNum < colNum){
                                 colNum = tikNum;
@@ -264,25 +255,14 @@
                             for ( i = 0; i < colNum; i++){
                                 
                                 var x = trendCell.insertCell(-1);
-                                // x.innerHTML = "<a id= " + trending[i] +  ">" + trending[i] + "</a>";
+                                
                                 x.innerHTML = "<a id= " + trending[i] + " href = /summary/" + trending[i] + "/ " + " style= color:" + trendType[i] +"; >" + trending[i] + "</a>";
 
-                                //x.style.color = trendType[i];
-                                //x.setAttribute('id', trending[i]);
-                                //x.setAttribute('href', "http://www.facebook.com");
-                                //console.log('new');
+                                
                             }
                             
                         </script>
-                            <!--
-                            {% for t, c in trending.items %}
-                                {% if forloop.counter < 20 %}
-                                <th ><a id= "{{t}}"  href="{% url 'summary' t %}">{{t}}</a></th>
-                                }
-                                {% endif %}
-                            {% endfor %}
-                            -->
-                        
+                          
                     </tr>
                 </table>
             </div>
@@ -325,7 +305,7 @@
     
     <div class="container" id="contentDiv" style="max-width:1000px;">
         <div class="row" style="margin:0px 0px 0px 0px;" >
-           <div class="col-md-12" style="border-color:rgb(0,150,190);border-style:solid;border-width:1px;
+           <div class="col-md-12" id="rowWidth" style="border-color:rgb(0,150,190);border-style:solid;border-width:1px;
                     margin:5px 0px 0px 0px; padding:0px 0px 0px 0px;border-radius:10px 10px 10px 10px;  
                     background-color:rgb(242, 242, 242);">
                    
@@ -373,7 +353,7 @@
     
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>    
-    <script src="{% static "js/riskyNumber-ajax.js" %}"></script>      
+    <script src="{% static 'js/riskyNumber-ajax.js' %}"></script>      
    
           
 </body>

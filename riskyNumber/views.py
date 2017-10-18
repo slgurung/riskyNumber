@@ -62,7 +62,7 @@ updateTrend = True
 #     trendStk.save()
 #*****************************************
 
-
+indexTickerList = ['^GSPC', '^DJI', '^IXIC']
 stkIndex = {'^GSPC': 'S&P 500', '^DJI': 'Dow Jones Industrial' , '^IXIC': 'Nasdaq Composite'}
 # for google finance url
 #stkIndex = {'.INX': 'S&P 500', '.DJI': 'Dow Jones Industrial' , '.IXIC': 'Nasdaq Composite'}
@@ -71,8 +71,9 @@ stkIndex = {'^GSPC': 'S&P 500', '^DJI': 'Dow Jones Industrial' , '^IXIC': 'Nasda
 def about(request):
     
     context_dict = {}
-    context_dict['trending'] = trendList
-    
+    context_dict['ticker'] = 1234 # to exclude resizeChart() on window resize
+    context_dict['trending'] = list(trendList.keys())
+    context_dict['trendType'] = list(trendList.values())    
     
     return render(request, 'riskyNumber/about.html', context_dict)
 
@@ -102,7 +103,7 @@ def index(request):
 
     if current_hour > 11:
         if updateTrend:
-            trendList = get_trending()
+            trendList = get_trending() # update trendList
             updateTrend = False
     else:
         updateTrend = True
@@ -168,22 +169,29 @@ def summary(request, ticker):
 
     context_dict['ticker'] = ticker
                 
-    if ticker not in stkIndex: #['^GSPC', '^DJI', '^IXIC']:
+    if ticker not in indexTickerList: #['^GSPC', '^DJI', '^IXIC']:
+        context_dict['summary'], context_dict['fundamentals'] = get_summary(ticker)
+
         stkObj = Stock.objects.get(ticker = ticker).name.split(" ")[:2] # no error if list has one element
         if len(stkObj) > 1:
             context_dict['name'] = stkObj[0] + " " +stkObj[1]
         else:
             context_dict['name'] = stkObj[0]
+
+        if ticker not in fillingDict.keys():
+            fThread = fillingThread('filling:' + ticker, ticker)
+            fThread.start()
     else:
         context_dict['name'] = stkIndex[ticker]
         #exchange = indexEx[ticker]
+    # moved above inside if block
+    # if ticker not in stkIndex.keys() and ticker not in fillingDict.keys():
+    #     fThread = fillingThread('filling:' + ticker, ticker)
+    #     fThread.start()
     
-    if ticker not in stkIndex and ticker not in fillingDict:
-        fThread = fillingThread('filling:' + ticker, ticker)
-        fThread.start()
-    
-    if ticker not in ('^DJI', '^IXIC', '^GSPC'):
-        context_dict['summary'], context_dict['fundamentals'] = get_summary(ticker)   
+    # moved inside above if block
+    # if ticker not in ['^DJI', '^IXIC', '^GSPC']:
+    #     context_dict['summary'], context_dict['fundamentals'] = get_summary(ticker)   
     
     
     i = list(quote.index.strftime("%Y-%m-%d"))
@@ -213,7 +221,8 @@ def summary(request, ticker):
     context_dict['realVol'] = list(quote.volume) 
         
     context_dict['businessNews'], context_dict['stockNews'] = news(ticker) # save this for quick download
-       
+    context_dict['indexTickerList']  = indexTickerList
+
     return render(request, 'riskyNumber/summary.html', context_dict)
 
 def hChart(request):    

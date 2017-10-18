@@ -27,8 +27,8 @@ def get_trending():
     mostDeclined = soup.find('div', id='_declined')
     #print(mostAdvanced.prettify())
     # mostActive = mostActive.find_all('h3')[1:2]
-    mostAdvanced = mostAdvanced.find_all('h3')[1:15]
-    mostDeclined = mostDeclined.find_all('h3')[1:15]
+    mostAdvanced = mostAdvanced.find_all('h3')[1:13]
+    mostDeclined = mostDeclined.find_all('h3')[1:13]
     
     # for h in mostActive:
     #     symbol = h.string
@@ -51,8 +51,8 @@ def get_trending():
     mostDeclined = soup.find('div', id='_declined')
     #print(mostAdvanced.prettify())
     #mostActive = mostActive.find_all('h3')[1:1]
-    mostAdvanced = mostAdvanced.find_all('h3')[1:4]
-    mostDeclined = mostDeclined.find_all('h3')[1:4]
+    mostAdvanced = mostAdvanced.find_all('h3')[1:5]
+    mostDeclined = mostDeclined.find_all('h3')[1:5]
     
     # for h in mostActive:
     #     symbol = h.string
