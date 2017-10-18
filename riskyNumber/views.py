@@ -46,7 +46,7 @@ if not tikCikDict:
 fillingDict={}
 
 ### to delete all stocks from database ###
-#Stock.objects.all().delete()
+Stock.objects.all().delete()
 ##########################################
 
 ####### do something for begining setup
