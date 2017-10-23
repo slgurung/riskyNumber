@@ -34,7 +34,7 @@ indexDf = get_historical(indexTicker)
 
 updateQuote = True
 
-stkQuote = {'ticker': None, 'df': None} 
+stkQuote = {} 
 #########################################
 # to scrape sec fillings
 tikCikDict = {}
@@ -82,11 +82,14 @@ def index(request):
     global indexDf
     global trendList
     global updateTrend
-    global indexTicker
+    #global indexTicker
 
     context_dict = {}
+
+    visitor_cookie_handler(request)
+    context_dict['visits'] = request.session['visits']
     #################
-    quotePeriod = 90 # need to match to chartPeriod at index.html
+    quotePeriod = 365 # need to match to chartPeriod at index.html
 
     ######## to store quote locally
     current_hour = dt.now().hour
@@ -114,9 +117,7 @@ def index(request):
     context_dict['ticker'] = indexTicker    
     context_dict['name'] = stkIndex[indexTicker]
     
-    visitor_cookie_handler(request)
-    context_dict['visits'] = request.session['visits']
-    
+       
     #context_dict['summary'], context_dict['fundamentals'] = get_summary(indexTicker)   
     
     i = list(quote.index.strftime("%Y-%m-%d"))
@@ -149,19 +150,21 @@ def index(request):
 def summary(request, ticker):
     #exchange = 'NASDAQ'
     global stkQuote  # to update stkQuote values
-    quotePeriod = 90 # need to match with chartPeriod at summary.html
+    quotePeriod = 365 # need to match with chartPeriod at summary.html
     context_dict = {}
 
     if ticker == indexTicker:
-        startDate = date.today() - timedelta(quotePeriod)
-        quote = indexDf[startDate: ]
+        #startDate = date.today() - timedelta(quotePeriod)
+        quote = indexDf #[startDate: ]
     else:
-        if stkQuote['ticker'] != ticker:
-            stkQuote['df'] = get_historical(ticker)
-            stkQuote['ticker'] = ticker
+        #if ticker not in stkQuote.keys(): #stkQuote['ticker'] != ticker:
+        stkQuote[ticker] = get_historical(ticker)
+        # else:
+        #     quote = stkQuote[ticker] #get_historical(ticker)
+        #stkQuote['ticker'] = ticker
 
         startDate = date.today() - timedelta(quotePeriod)
-        quote = stkQuote['df'][startDate: ]
+        quote = stkQuote[ticker][startDate: ]
 
 
     context_dict['trending'] = list(trendList.keys())
@@ -238,8 +241,8 @@ def hChart(request):
         
     else:
         startDate = date.today() - timedelta(int(chartPeriod))
-        quote = stkQuote['df'][startDate: ]
-    
+        quote = stkQuote[ticker][startDate: ]
+        #quote = get_historical(ticker, int(chartPeriod))
     # volume is int64 type and it is not json serializable
     # So, it need to convert to float type to make json serializable    
     quote.volume = quote.volume.astype('float64')
