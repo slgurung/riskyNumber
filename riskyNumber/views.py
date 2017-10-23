@@ -241,8 +241,8 @@ def hChart(request):
         
     else:
         startDate = date.today() - timedelta(int(chartPeriod))
-        quote = stkQuote[ticker][startDate: ]
-        #quote = get_historical(ticker, int(chartPeriod))
+        #quote = stkQuote[ticker][startDate: ]
+        quote = get_historical(ticker, int(chartPeriod))
     # volume is int64 type and it is not json serializable
     # So, it need to convert to float type to make json serializable    
     quote.volume = quote.volume.astype('float64')
