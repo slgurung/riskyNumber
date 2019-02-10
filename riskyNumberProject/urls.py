@@ -23,7 +23,7 @@ from django.conf.urls.static import static
 urlpatterns = [
     url(r'^$', views.index, name = 'home'),
     url(r'^riskyNumber/', include('riskyNumber.urls')),
-    url(r'^admin/', admin.site.urls),
+    url(r'^shouelkwhods/', admin.site.urls),
     #url(r'^accounts/register/$', views.MyRegistrationView.as_view(),
     #               name = 'registration_register'),
     url(r'^accounts/', include('registration.backends.simple.urls')),
