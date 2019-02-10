@@ -23,12 +23,12 @@ MEDIA_DIR = os.path.join(BASE_DIR, 'media')
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'wmk4)v317epkun7j2-1yn#=-%ylz2sr-1uw^6h5tf@*dip8g9j'
+SECRET_KEY = 'xxxxxxxxxxxxxxxxxxxxxxxx'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['.riskynumber.com','.riskynumbers.com','162.243.172.77']
+ALLOWED_HOSTS = [ip or domain name]
 
 
 # Application definition
@@ -83,9 +83,9 @@ WSGI_APPLICATION = 'riskyNumberProject.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'riskynumberdb', #don't use as riskyNumberDB, won't recognize
-        'USER': 'riskyuser',
-        'PASSWORD': '1S3Tock7',
+        'NAME': 'dbname', 
+        'USER': 'username',
+        'PASSWORD': 'user_password',
         'HOST': 'localhost',
         'PORT': '',
 	
@@ -144,4 +144,4 @@ MEDIA_ROOT = MEDIA_DIR
 MEDIA_URL = '/media/'
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
-STATICFILES_DIRS = ['/home/risknumber/riskyNumber/extstatic',]  
+
